@@ -30,11 +30,15 @@ export default function RedirectPage() {
                   return;
                 }
                 
-                const urlHistory = localStorage.getItem('url-shortener-history');
+                // Try multiple localStorage keys
+                let urlHistory = localStorage.getItem('url-shortener-history') || 
+                                localStorage.getItem('urlHistory') ||
+                                localStorage.getItem('url-shortener-history-backup');
+                
                 console.log('URL History:', urlHistory);
                 
                 if (!urlHistory) {
-                  console.log('No URL history found');
+                  console.log('No URL history found in any key');
                   document.body.innerHTML = '<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center"><div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full mx-4 text-center"><div class="w-12 h-12 mx-auto mb-4 text-red-600">⚠️</div><h1 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Redirect Error</h1><p class="text-gray-600 dark:text-gray-400 mb-4">Short URL not found</p><button onclick="window.location.href=\'/\'" class="bg-primary-600 text-white px-4 py-2 rounded-lg">Go to Homepage</button></div></div>';
                   return;
                 }
@@ -43,16 +47,33 @@ export default function RedirectPage() {
                   const urls = JSON.parse(urlHistory);
                   console.log('Parsed URLs:', urls);
                   
-                  // Find URL by checking if the shortId is in the shortUrl
-                  const urlData = urls.find(url => {
-                    const urlId = url.shortUrl.split('id=')[1];
-                    return urlId === shortId;
+                  // Try multiple ways to find the URL
+                  let urlData = null;
+                  
+                  // Method 1: Find by shortId in shortUrl
+                  urlData = urls.find(url => {
+                    if (url.shortUrl && url.shortUrl.includes('id=')) {
+                      const urlId = url.shortUrl.split('id=')[1];
+                      return urlId === shortId;
+                    }
+                    return false;
                   });
+                  
+                  // Method 2: Find by customAlias
+                  if (!urlData) {
+                    urlData = urls.find(url => url.customAlias === shortId);
+                  }
+                  
+                  // Method 3: Find by ID
+                  if (!urlData) {
+                    urlData = urls.find(url => url.id === shortId);
+                  }
                   
                   console.log('Found URL data:', urlData);
                   
                   if (!urlData) {
                     console.log('URL data not found for short ID:', shortId);
+                    console.log('Available URLs:', urls.map(u => ({ id: u.id, shortUrl: u.shortUrl, customAlias: u.customAlias })));
                     document.body.innerHTML = '<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center"><div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full mx-4 text-center"><div class="w-12 h-12 mx-auto mb-4 text-red-600">⚠️</div><h1 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Redirect Error</h1><p class="text-gray-600 dark:text-gray-400 mb-4">Short URL not found</p><button onclick="window.location.href=\'/\'" class="bg-primary-600 text-white px-4 py-2 rounded-lg">Go to Homepage</button></div></div>';
                     return;
                   }
