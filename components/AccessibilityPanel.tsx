@@ -300,7 +300,10 @@ export default function AccessibilityPanel() {
               className="bg-white rounded-l-xl shadow-2xl w-full max-w-md h-full overflow-hidden"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 className="text-lg font-bold text-gray-900">Accessibility</h2>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Accessibility</h2>
+                  <p className="text-xs text-gray-500">{accessibilityOptions.length} Options Available</p>
+                </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={resetSettings}
@@ -321,13 +324,33 @@ export default function AccessibilityPanel() {
                 </div>
               </div>
 
-              <div className="p-4 overflow-y-auto h-[calc(100vh-120px)]">
-                <div className="space-y-3">
-                  {accessibilityOptions.map((option) => (
-                    <div key={option.key} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="p-4 overflow-y-auto h-[calc(100vh-140px)]">
+                <div className="mb-4 p-2 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-700">
+                    <strong>{accessibilityOptions.length} Accessibility Options</strong> - Scroll to see all options
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {accessibilityOptions.map((option, index) => (
+                    <div key={option.key} className={`flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors ${
+                      option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings] 
+                        ? 'bg-blue-50 border border-blue-200' 
+                        : ''
+                    }`}>
                       <div className="flex items-center space-x-2 flex-1">
-                        <option.icon className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                        <option.icon className={`w-4 h-4 ${
+                          option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings]
+                            ? 'text-blue-600'
+                            : 'text-gray-600'
+                        }`} />
+                        <span className={`text-sm font-medium ${
+                          option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings]
+                            ? 'text-blue-700'
+                            : 'text-gray-700'
+                        }`}>{option.label}</span>
+                        {option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings] && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">ON</span>
+                        )}
                       </div>
                       
                       {option.type === 'toggle' ? (
