@@ -36,6 +36,7 @@ export default function BatchProcessor() {
     averageConfidence: 0,
     totalProcessingTime: 0
   })
+  const [expandedFile, setExpandedFile] = useState<string | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: ProcessedFile[] = acceptedFiles.map(file => ({
@@ -273,14 +274,17 @@ export default function BatchProcessor() {
   }
 
   const saveAsFile = (text: string, filename: string) => {
-    const blob = new Blob([text], { type: 'text/plain' })
+    const file = files.find(f => f.text === text)
+    const formattedText = file ? formatTextOutput(text, file.file.name, file.type) : text
+    
+    const blob = new Blob([formattedText], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = filename
     link.click()
     URL.revokeObjectURL(url)
-    toast.success('File saved!')
+    toast.success('Formatted file saved!')
   }
 
   const filteredFiles = files.filter(file => {
@@ -295,6 +299,100 @@ export default function BatchProcessor() {
     calculateStats()
   }, [files])
 
+  const formatTextOutput = (text: string, filename: string, type: string) => {
+    // Clean and structure the text
+    let cleanedText = text
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
+      .trim()
+
+    // Add structure based on content type
+    if (type === 'image') {
+      // For images, try to identify document types and format accordingly
+      if (cleanedText.toLowerCase().includes('driving licence') || cleanedText.toLowerCase().includes('dlno')) {
+        return formatDrivingLicense(cleanedText, filename)
+      } else if (cleanedText.toLowerCase().includes('admit card') || cleanedText.toLowerCase().includes('examination')) {
+        return formatAdmitCard(cleanedText, filename)
+      } else if (cleanedText.toLowerCase().includes('mark sheet') || cleanedText.toLowerCase().includes('marksheet')) {
+        return formatMarksheet(cleanedText, filename)
+      }
+    }
+
+    // Default formatting
+    return `📄 ${filename} (${type.toUpperCase()})
+${'='.repeat(60)}
+${cleanedText}
+${'='.repeat(60)}
+
+`
+  }
+
+  const formatDrivingLicense = (text: string, filename: string) => {
+    const lines = text.split('\n').filter(line => line.trim().length > 0)
+    let formatted = `🚗 DRIVING LICENSE - ${filename}
+${'='.repeat(60)}
+
+`
+
+    // Extract key information
+    const dlNoMatch = text.match(/DLNo[:\s]*([A-Z0-9\s]+)/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const dobMatch = text.match(/Date of Birth[:\s]*([0-9-]+)/i)
+    const addressMatch = text.match(/Address[:\s]*([^,]+)/i)
+
+    if (dlNoMatch) formatted += `📋 License Number: ${dlNoMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (dobMatch) formatted += `📅 Date of Birth: ${dobMatch[1].trim()}\n`
+    if (addressMatch) formatted += `🏠 Address: ${addressMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatAdmitCard = (text: string, filename: string) => {
+    const lines = text.split('\n').filter(line => line.trim().length > 0)
+    let formatted = `🎓 ADMIT CARD - ${filename}
+${'='.repeat(60)}
+
+`
+
+    // Extract key information
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const rollMatch = text.match(/Roll[:\s]*([A-Z0-9-]+)/i)
+    const regMatch = text.match(/Reg[:\s]*([A-Z0-9-]+)/i)
+    const schoolMatch = text.match(/School[:\s]*([A-Z\s]+)/i)
+
+    if (nameMatch) formatted += `👤 Student Name: ${nameMatch[1].trim()}\n`
+    if (rollMatch) formatted += `🎫 Roll Number: ${rollMatch[1].trim()}\n`
+    if (regMatch) formatted += `📋 Registration: ${regMatch[1].trim()}\n`
+    if (schoolMatch) formatted += `🏫 School: ${schoolMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatMarksheet = (text: string, filename: string) => {
+    const lines = text.split('\n').filter(line => line.trim().length > 0)
+    let formatted = `📊 MARK SHEET - ${filename}
+${'='.repeat(60)}
+
+`
+
+    // Extract key information
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const rollMatch = text.match(/Roll[:\s]*([A-Z0-9-]+)/i)
+    const regMatch = text.match(/Reg[:\s]*([A-Z0-9-]+)/i)
+    const resultMatch = text.match(/RESULT[:\s]*([A-Z0-9\s]+)/i)
+
+    if (nameMatch) formatted += `👤 Student Name: ${nameMatch[1].trim()}\n`
+    if (rollMatch) formatted += `🎫 Roll Number: ${rollMatch[1].trim()}\n`
+    if (regMatch) formatted += `📋 Registration: ${regMatch[1].trim()}\n`
+    if (resultMatch) formatted += `🏆 Result: ${resultMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
   const downloadAll = () => {
     const completedFiles = files.filter(file => file.status === 'completed')
     if (completedFiles.length === 0) {
@@ -302,19 +400,41 @@ export default function BatchProcessor() {
       return
     }
 
-    const allText = completedFiles.map(file => 
-      `=== ${file.file.name} (${file.type.toUpperCase()}) ===\n${file.text}\n\n`
-    ).join('')
+    // Create a structured report
+    let report = `📋 BATCH PROCESSING REPORT
+${'='.repeat(80)}
+Generated: ${new Date().toLocaleString()}
+Total Files: ${completedFiles.length}
+Total Words: ${processingStats.totalWords.toLocaleString()}
+Average Processing Time: ${processingStats.completedFiles > 0 ? Math.round(processingStats.totalProcessingTime / processingStats.completedFiles / 1000) : 0}s
+${'='.repeat(80)}
 
-    const blob = new Blob([allText], { type: 'text/plain' })
+`
+
+    // Add formatted content for each file
+    completedFiles.forEach((file, index) => {
+      report += formatTextOutput(file.text, file.file.name, file.type)
+    })
+
+    // Add summary
+    report += `📊 PROCESSING SUMMARY
+${'='.repeat(80)}
+✅ Successfully Processed: ${completedFiles.length} files
+📝 Total Words Extracted: ${processingStats.totalWords.toLocaleString()}
+⏱️ Total Processing Time: ${Math.round(processingStats.totalProcessingTime / 1000)}s
+📈 Average Confidence: ${Math.round(processingStats.averageConfidence)}%
+${'='.repeat(80)}
+`
+
+    const blob = new Blob([report], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `batch-extracted-text-${Date.now()}.txt`
+    link.download = `batch-processing-report-${Date.now()}.txt`
     link.click()
     URL.revokeObjectURL(url)
     
-    toast.success('All text downloaded!')
+    toast.success('Structured report downloaded!')
   }
 
   const completedCount = files.filter(file => file.status === 'completed').length
@@ -554,16 +674,23 @@ export default function BatchProcessor() {
                 {file.status === 'completed' && (
                   <>
                     <button
+                      onClick={() => setExpandedFile(expandedFile === file.id ? null : file.id)}
+                      className="p-1 text-gray-400 hover:text-purple-500 transition-colors"
+                      title="Preview formatted text"
+                    >
+                      <Search className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => copyToClipboard(file.text)}
                       className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
-                      title="Copy text"
+                      title="Copy raw text"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => saveAsFile(file.text, `${file.file.name.replace(/\.[^/.]+$/, '')}.txt`)}
                       className="p-1 text-gray-400 hover:text-green-500 transition-colors"
-                      title="Save as file"
+                      title="Save formatted file"
                     >
                       <Save className="w-4 h-4" />
                     </button>
@@ -581,6 +708,63 @@ export default function BatchProcessor() {
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Text Preview */}
+      {expandedFile && (
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Text Preview</h3>
+            <button
+              onClick={() => setExpandedFile(null)}
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          {(() => {
+            const file = files.find(f => f.id === expandedFile)
+            if (!file || file.status !== 'completed') return null
+            
+            const formattedText = formatTextOutput(file.text, file.file.name, file.type)
+            return (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span>📄 {file.file.name}</span>
+                  <span>•</span>
+                  <span>{file.wordCount} words</span>
+                  {file.confidence && (
+                    <>
+                      <span>•</span>
+                      <span>{Math.round(file.confidence)}% confidence</span>
+                    </>
+                  )}
+                  <span>•</span>
+                  <span>{Math.round((file.processingTime || 0) / 1000)}s</span>
+                </div>
+                <div className="bg-white dark:bg-gray-900 p-4 rounded border max-h-64 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono">
+                    {formattedText}
+                  </pre>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => copyToClipboard(formattedText)}
+                    className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
+                  >
+                    Copy Formatted
+                  </button>
+                  <button
+                    onClick={() => saveAsFile(file.text, `${file.file.name.replace(/\.[^/.]+$/, '')}-formatted.txt`)}
+                    className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors"
+                  >
+                    Save Formatted
+                  </button>
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
 
       {files.length === 0 && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
