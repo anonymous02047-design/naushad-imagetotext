@@ -293,6 +293,104 @@ a:not(.btn-primary):not(.btn-secondary):hover {
   text-decoration-thickness: 2px;
 }
 
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .btn-primary, .btn-secondary {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .input-field {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Prevent horizontal scroll on mobile */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Better touch targets for mobile */
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve modal spacing on mobile */
+  .fixed.inset-0 {
+    padding: 0.5rem;
+  }
+  
+  /* Better text sizing on mobile */
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  
+  h3 {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+  
+  /* Improve grid layouts on mobile */
+  .grid {
+    gap: 1rem;
+  }
+  
+  /* Better spacing for mobile forms */
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .card {
+    padding: 1.25rem;
+  }
+  
+  /* Better grid layouts for tablets */
+  .grid-cols-1.lg\\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+  
+  /* Better spacing for large screens */
+  .space-y-6 > * + * {
+    margin-top: 2rem;
+  }
+}
+
 @keyframes loading-dots2 {
   0% {
     transform: translate(0, 0);

@@ -192,7 +192,7 @@ export default function Home() {
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Header />
       
-      <main id="main-content" className="container mx-auto px-4 py-8">
+      <main id="main-content" className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -200,85 +200,87 @@ export default function Home() {
           className="max-w-6xl mx-auto"
         >
           {/* Hero Section */}
-          <div className="text-center mb-12">
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4"
-            >
-              Image to Text
-              <span className="text-primary-600 dark:text-primary-400"> Converter</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
-            >
-              Extract text from images with advanced OCR technology. Support for multiple languages, 
-              image preprocessing, and intelligent text recognition.
-            </motion.p>
-          </div>
+                  <div className="text-center mb-8 sm:mb-12">
+                    <motion.h1
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.6 }}
+                      className="text-2xl sm:text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4"
+                    >
+                      Image to Text
+                      <span className="text-primary-600 dark:text-primary-400"> Converter</span>
+                    </motion.h1>
+                    <motion.p
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4, duration: 0.6 }}
+                      className="text-sm sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4"
+                    >
+                      Extract text from images with advanced OCR technology. Support for multiple languages,
+                      image preprocessing, and intelligent text recognition.
+                    </motion.p>
+                  </div>
 
                   {/* Tab Navigation and Clear Button */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.6 }}
-                    className="flex justify-center items-center mb-8 space-x-4"
+                    className="flex flex-col sm:flex-row justify-center items-center mb-6 sm:mb-8 space-y-3 sm:space-y-0 sm:space-x-4"
                   >
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-200 dark:border-gray-700">
-                      <button
-                        onClick={() => setActiveTab('single')}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          activeTab === 'single'
-                            ? 'bg-primary-600 text-white'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
-                        Single Image
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('batch')}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          activeTab === 'batch'
-                            ? 'bg-primary-600 text-white'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
-                        Batch Processing
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('pdf')}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          activeTab === 'pdf'
-                            ? 'bg-primary-600 text-white'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
-                        PDF to Text
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('qr')}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          activeTab === 'qr'
-                            ? 'bg-primary-600 text-white'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
-                        QR Generator
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('url')}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          activeTab === 'url'
-                            ? 'bg-primary-600 text-white'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
-                        URL Shortener
-                      </button>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-200 dark:border-gray-700 w-full sm:w-auto overflow-x-auto">
+                      <div className="flex space-x-1 min-w-max sm:min-w-0">
+                        <button
+                          onClick={() => setActiveTab('single')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'single'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          Single Image
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('batch')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'batch'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          Batch
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('pdf')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'pdf'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          PDF to Text
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('qr')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'qr'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          QR Generator
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('url')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'url'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          URL Shortener
+                        </button>
+                      </div>
                     </div>
                     
                     {/* Clear Button */}
@@ -290,10 +292,10 @@ export default function Home() {
                         whileTap={{ scale: 0.95 }}
                         onClick={clearAllData}
                         disabled={isProcessing}
-                        className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
+                        className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-lg transition-colors duration-200 text-xs sm:text-sm font-medium"
                         title="Clear all data"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span>Clear All</span>
                       </motion.button>
                     )}
@@ -301,13 +303,13 @@ export default function Home() {
 
           {/* Main Content */}
           {activeTab === 'single' ? (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {/* Left Column - Image Upload and Preview */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
               >
                 <ImageUploader 
                   onImageSelect={handleImageSelect}
@@ -328,7 +330,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7, duration: 0.6 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
               >
                 {selectedImage && (
                   <ImageProcessor
@@ -347,7 +349,7 @@ export default function Home() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6 lg:col-span-2 xl:col-span-1"
               >
                 {processedImage && (
                   <TextExtractor

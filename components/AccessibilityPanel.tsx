@@ -197,7 +197,7 @@ export default function AccessibilityPanel() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] overflow-hidden mx-4"
               role="dialog"
               aria-labelledby="accessibility-title"
               aria-modal="true"
@@ -225,15 +225,15 @@ export default function AccessibilityPanel() {
                 </button>
               </div>
 
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                <div className="space-y-6">
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Font Size */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                       <Type className="w-4 h-4 inline mr-2" />
                       Font Size
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {(['small', 'medium', 'large', 'extra-large'] as const).map((size) => (
                         <button
                           key={size}
@@ -242,7 +242,7 @@ export default function AccessibilityPanel() {
                             announceToScreenReader(`Font size changed to ${size}`)
                             playSound('click')
                           }}
-                          className={`p-3 rounded-lg border transition-colors ${
+                          className={`p-2 sm:p-3 rounded-lg border transition-colors ${
                             settings.fontSize === size
                               ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
                               : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
@@ -250,7 +250,7 @@ export default function AccessibilityPanel() {
                           aria-pressed={settings.fontSize === size}
                         >
                           <div className="text-center">
-                            <div className="font-semibold capitalize">{size}</div>
+                            <div className="font-semibold capitalize text-xs sm:text-sm">{size}</div>
                             <div className="text-xs opacity-75">
                               {size === 'small' && '14px'}
                               {size === 'medium' && '16px'}
@@ -278,15 +278,15 @@ export default function AccessibilityPanel() {
                             announceToScreenReader(`Contrast changed to ${level}`)
                             playSound('click')
                           }}
-                          className={`w-full p-3 rounded-lg border transition-colors text-left ${
+                          className={`w-full p-2 sm:p-3 rounded-lg border transition-colors text-left ${
                             settings.contrast === level
                               ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
                               : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
                           }`}
                           aria-pressed={settings.contrast === level}
                         >
-                          <div className="font-semibold capitalize">{level} Contrast</div>
-                          <div className="text-xs opacity-75">
+                          <div className="font-semibold capitalize text-sm">{level} Contrast</div>
+                          <div className="text-xs opacity-75 mt-1">
                             {level === 'normal' && 'Standard contrast for comfortable reading'}
                             {level === 'high' && 'Enhanced contrast for better visibility'}
                             {level === 'extra-high' && 'Maximum contrast for accessibility'}
@@ -335,14 +335,14 @@ export default function AccessibilityPanel() {
                         icon: settings.soundEffects ? Volume2 : VolumeX
                       }
                     ].map((option) => (
-                      <div key={option.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <option.icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
+                      <div key={option.key} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                          <option.icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
                               {option.label}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                               {option.description}
                             </div>
                           </div>
@@ -353,7 +353,7 @@ export default function AccessibilityPanel() {
                             announceToScreenReader(`${option.label} ${!settings[option.key] ? 'enabled' : 'disabled'}`)
                             playSound('click')
                           }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors flex-shrink-0 ${
                             settings[option.key]
                               ? 'bg-primary-600'
                               : 'bg-gray-300 dark:bg-gray-600'
@@ -363,8 +363,8 @@ export default function AccessibilityPanel() {
                           aria-label={`Toggle ${option.label}`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings[option.key] ? 'translate-x-6' : 'translate-x-1'
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                              settings[option.key] ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
                         </button>
@@ -373,10 +373,10 @@ export default function AccessibilityPanel() {
                   </div>
 
                   {/* Accessibility Info */}
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <div className="text-sm text-blue-800 dark:text-blue-200">
-                      <p className="font-medium mb-2">Accessibility Features:</p>
-                      <ul className="space-y-1 text-xs">
+                      <p className="font-medium mb-2 text-sm sm:text-base">Accessibility Features:</p>
+                      <ul className="space-y-1 text-xs sm:text-sm">
                         <li>• Adjustable font sizes for better readability</li>
                         <li>• High contrast modes for visual accessibility</li>
                         <li>• Reduced motion for users with vestibular disorders</li>
@@ -389,14 +389,14 @@ export default function AccessibilityPanel() {
                   </div>
 
                   {/* Close Button */}
-                  <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex justify-end pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={() => {
                         setIsOpen(false)
                         announceToScreenReader('Accessibility panel closed')
                         playSound('click')
                       }}
-                      className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium"
+                      className="px-4 sm:px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base"
                       aria-label="Close accessibility panel"
                     >
                       Done
