@@ -18,6 +18,94 @@ export default function PDFProcessor({ onTextExtracted }: PDFProcessorProps) {
     status: 'success' | 'error'
   }>>([])
 
+  const formatTextOutput = (text: string, filename: string) => {
+    // Clean and structure the text
+    let cleanedText = text
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
+      .trim()
+
+    // Add structure based on content type
+    if (cleanedText.toLowerCase().includes('driving licence') || cleanedText.toLowerCase().includes('dlno')) {
+      return formatDrivingLicense(cleanedText, filename)
+    } else if (cleanedText.toLowerCase().includes('admit card') || cleanedText.toLowerCase().includes('examination')) {
+      return formatAdmitCard(cleanedText, filename)
+    } else if (cleanedText.toLowerCase().includes('mark sheet') || cleanedText.toLowerCase().includes('marksheet')) {
+      return formatMarksheet(cleanedText, filename)
+    }
+
+    // Default formatting
+    return `📄 ${filename}
+${'='.repeat(60)}
+${cleanedText}
+${'='.repeat(60)}
+
+`
+  }
+
+  const formatDrivingLicense = (text: string, filename: string) => {
+    let formatted = `🚗 DRIVING LICENSE - ${filename}
+${'='.repeat(60)}
+
+`
+
+    // Extract key information
+    const dlNoMatch = text.match(/DLNo[:\s]*([A-Z0-9\s]+)/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const dobMatch = text.match(/Date of Birth[:\s]*([0-9-]+)/i)
+    const addressMatch = text.match(/Address[:\s]*([^,]+)/i)
+
+    if (dlNoMatch) formatted += `📋 License Number: ${dlNoMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (dobMatch) formatted += `📅 Date of Birth: ${dobMatch[1].trim()}\n`
+    if (addressMatch) formatted += `🏠 Address: ${addressMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatAdmitCard = (text: string, filename: string) => {
+    let formatted = `🎓 ADMIT CARD - ${filename}
+${'='.repeat(60)}
+
+`
+
+    // Extract key information
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const rollMatch = text.match(/Roll[:\s]*([A-Z0-9-]+)/i)
+    const regMatch = text.match(/Reg[:\s]*([A-Z0-9-]+)/i)
+    const schoolMatch = text.match(/School[:\s]*([A-Z\s]+)/i)
+
+    if (nameMatch) formatted += `👤 Student Name: ${nameMatch[1].trim()}\n`
+    if (rollMatch) formatted += `🎫 Roll Number: ${rollMatch[1].trim()}\n`
+    if (regMatch) formatted += `📋 Registration: ${regMatch[1].trim()}\n`
+    if (schoolMatch) formatted += `🏫 School: ${schoolMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatMarksheet = (text: string, filename: string) => {
+    let formatted = `📊 MARK SHEET - ${filename}
+${'='.repeat(60)}
+
+`
+
+    // Extract key information
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const rollMatch = text.match(/Roll[:\s]*([A-Z0-9-]+)/i)
+    const regMatch = text.match(/Reg[:\s]*([A-Z0-9-]+)/i)
+    const resultMatch = text.match(/RESULT[:\s]*([A-Z0-9\s]+)/i)
+
+    if (nameMatch) formatted += `👤 Student Name: ${nameMatch[1].trim()}\n`
+    if (rollMatch) formatted += `🎫 Roll Number: ${rollMatch[1].trim()}\n`
+    if (regMatch) formatted += `📋 Registration: ${regMatch[1].trim()}\n`
+    if (resultMatch) formatted += `🏆 Result: ${resultMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
   const processPDF = async (file: File) => {
     try {
       // Convert File to ArrayBuffer
@@ -63,7 +151,8 @@ export default function PDFProcessor({ onTextExtracted }: PDFProcessorProps) {
         throw new Error('No text content found in PDF')
       }
       
-      return cleanedText
+      // Format the text output
+      return formatTextOutput(cleanedText, file.name)
     } catch (error) {
       console.error('PDF processing error:', error)
       
