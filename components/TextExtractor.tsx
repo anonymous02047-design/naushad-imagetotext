@@ -147,13 +147,47 @@ export default function TextExtractor({ image, onTextExtracted, onProcessingStat
       .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
       .trim()
 
-    // Add structure based on content type
-    if (cleanedText.toLowerCase().includes('driving licence') || cleanedText.toLowerCase().includes('dlno')) {
+    const lowerText = cleanedText.toLowerCase()
+
+    // Document type detection with comprehensive patterns
+    if (lowerText.includes('driving licence') || lowerText.includes('dlno') || lowerText.includes('driving license')) {
       return formatDrivingLicense(cleanedText, filename)
-    } else if (cleanedText.toLowerCase().includes('admit card') || cleanedText.toLowerCase().includes('examination')) {
+    } else if (lowerText.includes('admit card') || lowerText.includes('examination') || lowerText.includes('hall ticket')) {
       return formatAdmitCard(cleanedText, filename)
-    } else if (cleanedText.toLowerCase().includes('mark sheet') || cleanedText.toLowerCase().includes('marksheet')) {
+    } else if (lowerText.includes('mark sheet') || lowerText.includes('marksheet') || lowerText.includes('grade card')) {
       return formatMarksheet(cleanedText, filename)
+    } else if (lowerText.includes('passport') || lowerText.includes('passport no') || lowerText.includes('passport number')) {
+      return formatPassport(cleanedText, filename)
+    } else if (lowerText.includes('aadhaar') || lowerText.includes('aadhar') || lowerText.includes('uid')) {
+      return formatAadhaar(cleanedText, filename)
+    } else if (lowerText.includes('pan card') || lowerText.includes('permanent account number')) {
+      return formatPAN(cleanedText, filename)
+    } else if (lowerText.includes('voter id') || lowerText.includes('electoral') || lowerText.includes('epic')) {
+      return formatVoterID(cleanedText, filename)
+    } else if (lowerText.includes('birth certificate') || lowerText.includes('birth cert')) {
+      return formatBirthCertificate(cleanedText, filename)
+    } else if (lowerText.includes('death certificate') || lowerText.includes('death cert')) {
+      return formatDeathCertificate(cleanedText, filename)
+    } else if (lowerText.includes('marriage certificate') || lowerText.includes('marriage cert')) {
+      return formatMarriageCertificate(cleanedText, filename)
+    } else if (lowerText.includes('degree certificate') || lowerText.includes('graduation') || lowerText.includes('bachelor') || lowerText.includes('master')) {
+      return formatDegreeCertificate(cleanedText, filename)
+    } else if (lowerText.includes('invoice') || lowerText.includes('bill') || lowerText.includes('receipt')) {
+      return formatInvoice(cleanedText, filename)
+    } else if (lowerText.includes('bank statement') || lowerText.includes('account statement')) {
+      return formatBankStatement(cleanedText, filename)
+    } else if (lowerText.includes('salary slip') || lowerText.includes('payslip') || lowerText.includes('pay slip')) {
+      return formatSalarySlip(cleanedText, filename)
+    } else if (lowerText.includes('insurance') || lowerText.includes('policy')) {
+      return formatInsurance(cleanedText, filename)
+    } else if (lowerText.includes('medical report') || lowerText.includes('prescription') || lowerText.includes('diagnosis')) {
+      return formatMedicalDocument(cleanedText, filename)
+    } else if (lowerText.includes('property') || lowerText.includes('deed') || lowerText.includes('registry')) {
+      return formatPropertyDocument(cleanedText, filename)
+    } else if (lowerText.includes('contract') || lowerText.includes('agreement')) {
+      return formatContract(cleanedText, filename)
+    } else if (lowerText.includes('court') || lowerText.includes('legal') || lowerText.includes('judgment')) {
+      return formatLegalDocument(cleanedText, filename)
     }
 
     // Default formatting
@@ -223,6 +257,344 @@ ${'='.repeat(60)}
     if (rollMatch) formatted += `🎫 Roll Number: ${rollMatch[1].trim()}\n`
     if (regMatch) formatted += `📋 Registration: ${regMatch[1].trim()}\n`
     if (resultMatch) formatted += `🏆 Result: ${resultMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatPassport = (text: string, filename: string) => {
+    let formatted = `🛂 PASSPORT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const passportMatch = text.match(/Passport[:\s]*([A-Z0-9\s]+)/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const dobMatch = text.match(/Date of Birth[:\s]*([0-9-]+)/i)
+    const placeMatch = text.match(/Place of Birth[:\s]*([A-Z\s,]+)/i)
+    const issueMatch = text.match(/Date of Issue[:\s]*([0-9-]+)/i)
+    const expiryMatch = text.match(/Date of Expiry[:\s]*([0-9-]+)/i)
+
+    if (passportMatch) formatted += `📋 Passport Number: ${passportMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (dobMatch) formatted += `📅 Date of Birth: ${dobMatch[1].trim()}\n`
+    if (placeMatch) formatted += `🏠 Place of Birth: ${placeMatch[1].trim()}\n`
+    if (issueMatch) formatted += `📅 Date of Issue: ${issueMatch[1].trim()}\n`
+    if (expiryMatch) formatted += `📅 Date of Expiry: ${expiryMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatAadhaar = (text: string, filename: string) => {
+    let formatted = `🆔 AADHAAR CARD - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const aadhaarMatch = text.match(/(\d{4}\s?\d{4}\s?\d{4})/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const dobMatch = text.match(/Date of Birth[:\s]*([0-9-]+)/i)
+    const genderMatch = text.match(/Gender[:\s]*([A-Z]+)/i)
+    const addressMatch = text.match(/Address[:\s]*([^,]+)/i)
+
+    if (aadhaarMatch) formatted += `🆔 Aadhaar Number: ${aadhaarMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (dobMatch) formatted += `📅 Date of Birth: ${dobMatch[1].trim()}\n`
+    if (genderMatch) formatted += `⚧ Gender: ${genderMatch[1].trim()}\n`
+    if (addressMatch) formatted += `🏠 Address: ${addressMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatPAN = (text: string, filename: string) => {
+    let formatted = `💳 PAN CARD - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const panMatch = text.match(/([A-Z]{5}[0-9]{4}[A-Z]{1})/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const fatherMatch = text.match(/Father[:\s]*([A-Z\s]+)/i)
+    const dobMatch = text.match(/Date of Birth[:\s]*([0-9-]+)/i)
+
+    if (panMatch) formatted += `💳 PAN Number: ${panMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (fatherMatch) formatted += `👨 Father's Name: ${fatherMatch[1].trim()}\n`
+    if (dobMatch) formatted += `📅 Date of Birth: ${dobMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatVoterID = (text: string, filename: string) => {
+    let formatted = `🗳️ VOTER ID - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const epicMatch = text.match(/EPIC[:\s]*([A-Z0-9\s]+)/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const fatherMatch = text.match(/Father[:\s]*([A-Z\s]+)/i)
+    const ageMatch = text.match(/Age[:\s]*([0-9]+)/i)
+    const addressMatch = text.match(/Address[:\s]*([^,]+)/i)
+
+    if (epicMatch) formatted += `🗳️ EPIC Number: ${epicMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (fatherMatch) formatted += `👨 Father's Name: ${fatherMatch[1].trim()}\n`
+    if (ageMatch) formatted += `🎂 Age: ${ageMatch[1].trim()}\n`
+    if (addressMatch) formatted += `🏠 Address: ${addressMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatBirthCertificate = (text: string, filename: string) => {
+    let formatted = `👶 BIRTH CERTIFICATE - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const dobMatch = text.match(/Date of Birth[:\s]*([0-9-]+)/i)
+    const placeMatch = text.match(/Place of Birth[:\s]*([A-Z\s,]+)/i)
+    const fatherMatch = text.match(/Father[:\s]*([A-Z\s]+)/i)
+    const motherMatch = text.match(/Mother[:\s]*([A-Z\s]+)/i)
+
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (dobMatch) formatted += `📅 Date of Birth: ${dobMatch[1].trim()}\n`
+    if (placeMatch) formatted += `🏠 Place of Birth: ${placeMatch[1].trim()}\n`
+    if (fatherMatch) formatted += `👨 Father's Name: ${fatherMatch[1].trim()}\n`
+    if (motherMatch) formatted += `👩 Mother's Name: ${motherMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatDeathCertificate = (text: string, filename: string) => {
+    let formatted = `⚰️ DEATH CERTIFICATE - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const dodMatch = text.match(/Date of Death[:\s]*([0-9-]+)/i)
+    const placeMatch = text.match(/Place of Death[:\s]*([A-Z\s,]+)/i)
+    const causeMatch = text.match(/Cause of Death[:\s]*([A-Z\s,]+)/i)
+
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (dodMatch) formatted += `📅 Date of Death: ${dodMatch[1].trim()}\n`
+    if (placeMatch) formatted += `🏠 Place of Death: ${placeMatch[1].trim()}\n`
+    if (causeMatch) formatted += `💀 Cause of Death: ${causeMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatMarriageCertificate = (text: string, filename: string) => {
+    let formatted = `💒 MARRIAGE CERTIFICATE - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const groomMatch = text.match(/Groom[:\s]*([A-Z\s]+)/i)
+    const brideMatch = text.match(/Bride[:\s]*([A-Z\s]+)/i)
+    const dateMatch = text.match(/Date of Marriage[:\s]*([0-9-]+)/i)
+    const placeMatch = text.match(/Place of Marriage[:\s]*([A-Z\s,]+)/i)
+
+    if (groomMatch) formatted += `👨 Groom's Name: ${groomMatch[1].trim()}\n`
+    if (brideMatch) formatted += `👩 Bride's Name: ${brideMatch[1].trim()}\n`
+    if (dateMatch) formatted += `📅 Date of Marriage: ${dateMatch[1].trim()}\n`
+    if (placeMatch) formatted += `🏠 Place of Marriage: ${placeMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatDegreeCertificate = (text: string, filename: string) => {
+    let formatted = `🎓 DEGREE CERTIFICATE - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const degreeMatch = text.match(/Degree[:\s]*([A-Z\s]+)/i)
+    const universityMatch = text.match(/University[:\s]*([A-Z\s,]+)/i)
+    const yearMatch = text.match(/Year[:\s]*([0-9]+)/i)
+    const cgpaMatch = text.match(/CGPA[:\s]*([0-9.]+)/i)
+
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (degreeMatch) formatted += `🎓 Degree: ${degreeMatch[1].trim()}\n`
+    if (universityMatch) formatted += `🏫 University: ${universityMatch[1].trim()}\n`
+    if (yearMatch) formatted += `📅 Year: ${yearMatch[1].trim()}\n`
+    if (cgpaMatch) formatted += `📊 CGPA: ${cgpaMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatInvoice = (text: string, filename: string) => {
+    let formatted = `🧾 INVOICE/RECEIPT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const invoiceMatch = text.match(/Invoice[:\s]*([A-Z0-9\s-]+)/i)
+    const dateMatch = text.match(/Date[:\s]*([0-9-]+)/i)
+    const amountMatch = text.match(/Amount[:\s]*([₹$0-9,]+)/i)
+    const customerMatch = text.match(/Customer[:\s]*([A-Z\s]+)/i)
+    const companyMatch = text.match(/Company[:\s]*([A-Z\s,]+)/i)
+
+    if (invoiceMatch) formatted += `🧾 Invoice Number: ${invoiceMatch[1].trim()}\n`
+    if (dateMatch) formatted += `📅 Date: ${dateMatch[1].trim()}\n`
+    if (amountMatch) formatted += `💰 Amount: ${amountMatch[1].trim()}\n`
+    if (customerMatch) formatted += `👤 Customer: ${customerMatch[1].trim()}\n`
+    if (companyMatch) formatted += `🏢 Company: ${companyMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatBankStatement = (text: string, filename: string) => {
+    let formatted = `🏦 BANK STATEMENT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const accountMatch = text.match(/Account[:\s]*([0-9\s-]+)/i)
+    const bankMatch = text.match(/Bank[:\s]*([A-Z\s,]+)/i)
+    const periodMatch = text.match(/Period[:\s]*([0-9-\s]+)/i)
+    const balanceMatch = text.match(/Balance[:\s]*([₹$0-9,]+)/i)
+
+    if (accountMatch) formatted += `🏦 Account Number: ${accountMatch[1].trim()}\n`
+    if (bankMatch) formatted += `🏛️ Bank: ${bankMatch[1].trim()}\n`
+    if (periodMatch) formatted += `📅 Period: ${periodMatch[1].trim()}\n`
+    if (balanceMatch) formatted += `💰 Balance: ${balanceMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatSalarySlip = (text: string, filename: string) => {
+    let formatted = `💰 SALARY SLIP - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const empMatch = text.match(/Employee[:\s]*([A-Z0-9\s-]+)/i)
+    const monthMatch = text.match(/Month[:\s]*([A-Z0-9\s]+)/i)
+    const grossMatch = text.match(/Gross[:\s]*([₹$0-9,]+)/i)
+    const netMatch = text.match(/Net[:\s]*([₹$0-9,]+)/i)
+
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (empMatch) formatted += `🆔 Employee ID: ${empMatch[1].trim()}\n`
+    if (monthMatch) formatted += `📅 Month: ${monthMatch[1].trim()}\n`
+    if (grossMatch) formatted += `💰 Gross Salary: ${grossMatch[1].trim()}\n`
+    if (netMatch) formatted += `💰 Net Salary: ${netMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatInsurance = (text: string, filename: string) => {
+    let formatted = `🛡️ INSURANCE POLICY - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const policyMatch = text.match(/Policy[:\s]*([A-Z0-9\s-]+)/i)
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const premiumMatch = text.match(/Premium[:\s]*([₹$0-9,]+)/i)
+    const expiryMatch = text.match(/Expiry[:\s]*([0-9-]+)/i)
+
+    if (policyMatch) formatted += `🛡️ Policy Number: ${policyMatch[1].trim()}\n`
+    if (nameMatch) formatted += `👤 Name: ${nameMatch[1].trim()}\n`
+    if (premiumMatch) formatted += `💰 Premium: ${premiumMatch[1].trim()}\n`
+    if (expiryMatch) formatted += `📅 Expiry Date: ${expiryMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatMedicalDocument = (text: string, filename: string) => {
+    let formatted = `🏥 MEDICAL DOCUMENT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const nameMatch = text.match(/Name[:\s]*([A-Z\s]+)/i)
+    const ageMatch = text.match(/Age[:\s]*([0-9]+)/i)
+    const diagnosisMatch = text.match(/Diagnosis[:\s]*([A-Z\s,]+)/i)
+    const doctorMatch = text.match(/Doctor[:\s]*([A-Z\s]+)/i)
+    const dateMatch = text.match(/Date[:\s]*([0-9-]+)/i)
+
+    if (nameMatch) formatted += `👤 Patient Name: ${nameMatch[1].trim()}\n`
+    if (ageMatch) formatted += `🎂 Age: ${ageMatch[1].trim()}\n`
+    if (diagnosisMatch) formatted += `🔬 Diagnosis: ${diagnosisMatch[1].trim()}\n`
+    if (doctorMatch) formatted += `👨‍⚕️ Doctor: ${doctorMatch[1].trim()}\n`
+    if (dateMatch) formatted += `📅 Date: ${dateMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatPropertyDocument = (text: string, filename: string) => {
+    let formatted = `🏠 PROPERTY DOCUMENT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const ownerMatch = text.match(/Owner[:\s]*([A-Z\s]+)/i)
+    const addressMatch = text.match(/Address[:\s]*([A-Z\s,]+)/i)
+    const areaMatch = text.match(/Area[:\s]*([0-9\s]+)/i)
+    const valueMatch = text.match(/Value[:\s]*([₹$0-9,]+)/i)
+
+    if (ownerMatch) formatted += `👤 Owner: ${ownerMatch[1].trim()}\n`
+    if (addressMatch) formatted += `🏠 Address: ${addressMatch[1].trim()}\n`
+    if (areaMatch) formatted += `📐 Area: ${areaMatch[1].trim()}\n`
+    if (valueMatch) formatted += `💰 Value: ${valueMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatContract = (text: string, filename: string) => {
+    let formatted = `📋 CONTRACT/AGREEMENT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const party1Match = text.match(/Party[:\s]*([A-Z\s]+)/i)
+    const party2Match = text.match(/Second Party[:\s]*([A-Z\s]+)/i)
+    const dateMatch = text.match(/Date[:\s]*([0-9-]+)/i)
+    const amountMatch = text.match(/Amount[:\s]*([₹$0-9,]+)/i)
+
+    if (party1Match) formatted += `👤 First Party: ${party1Match[1].trim()}\n`
+    if (party2Match) formatted += `👤 Second Party: ${party2Match[1].trim()}\n`
+    if (dateMatch) formatted += `📅 Date: ${dateMatch[1].trim()}\n`
+    if (amountMatch) formatted += `💰 Amount: ${amountMatch[1].trim()}\n`
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  const formatLegalDocument = (text: string, filename: string) => {
+    let formatted = `⚖️ LEGAL DOCUMENT - ${filename}
+${'='.repeat(60)}
+
+`
+
+    const caseMatch = text.match(/Case[:\s]*([A-Z0-9\s-]+)/i)
+    const courtMatch = text.match(/Court[:\s]*([A-Z\s,]+)/i)
+    const dateMatch = text.match(/Date[:\s]*([0-9-]+)/i)
+    const judgeMatch = text.match(/Judge[:\s]*([A-Z\s]+)/i)
+
+    if (caseMatch) formatted += `⚖️ Case Number: ${caseMatch[1].trim()}\n`
+    if (courtMatch) formatted += `🏛️ Court: ${courtMatch[1].trim()}\n`
+    if (dateMatch) formatted += `📅 Date: ${dateMatch[1].trim()}\n`
+    if (judgeMatch) formatted += `👨‍⚖️ Judge: ${judgeMatch[1].trim()}\n`
 
     formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
     return formatted
