@@ -5,6 +5,19 @@ import { Mail, Phone, MapPin, Heart, Code } from 'lucide-react'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  
+  // Version information
+  const version = "0.1.0"
+  const buildDate = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  })
+  const buildTime = new Date().toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  })
 
   const footerLinks = {
     product: [
@@ -198,11 +211,31 @@ export default function Footer() {
 
           </div>
 
-          {/* Technology Stack */}
+          {/* Technology Stack & Version */}
           <div className="mt-6 pt-6 border-t border-gray-800">
-            <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
-              <Code className="w-4 h-4" />
-              <span>Built with Next.js, TypeScript, Tesseract.js, and Tailwind CSS</span>
+            <div className="flex flex-col items-center space-y-2 text-xs text-gray-500">
+              <div className="flex items-center space-x-2">
+                <Code className="w-4 h-4" />
+                <span>Built with Next.js, TypeScript, Tesseract.js, and Tailwind CSS</span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                <div className="flex items-center space-x-1">
+                  <span className="text-gray-600">Version:</span>
+                  <span className="text-primary-400 font-medium">v{version}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-gray-600">Build:</span>
+                  <span className="text-primary-400 font-medium">Auto-Detect System</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-gray-600">Features:</span>
+                  <span className="text-primary-400 font-medium">19+ Document Types</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-gray-600">Updated:</span>
+                  <span className="text-primary-400 font-medium">{buildDate} {buildTime}</span>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
