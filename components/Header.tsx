@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Github, Settings, HelpCircle, Home } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import KeyboardShortcuts from './KeyboardShortcuts'
+import AccessibilityPanel from './AccessibilityPanel'
 import Link from 'next/link'
 
 export default function Header() {
@@ -36,18 +37,19 @@ export default function Header() {
             transition={{ duration: 0.5 }}
             className="flex items-center space-x-2"
           >
-            <Link href="/" className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="Home">
+            <Link href="/" className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="Home" aria-label="Go to home page">
               <Home className="w-5 h-5" />
             </Link>
             <ThemeToggle />
+            <AccessibilityPanel />
             <KeyboardShortcuts />
-            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200">
+            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="Help" aria-label="Get help">
               <HelpCircle className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200">
+            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="Settings" aria-label="Open settings">
               <Settings className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200">
+            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="GitHub" aria-label="View on GitHub">
               <Github className="w-5 h-5" />
             </button>
           </motion.div>

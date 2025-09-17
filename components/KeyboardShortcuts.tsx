@@ -8,9 +8,13 @@ const SHORTCUTS_LIST = [
   { key: 'Ctrl + U', description: 'Upload image' },
   { key: 'Ctrl + Shift + C', description: 'Copy text to clipboard' },
   { key: 'Ctrl + D', description: 'Download text' },
+  { key: 'Ctrl + S', description: 'Take screenshot' },
   { key: 'Ctrl + R', description: 'Clear all data' },
   { key: 'Ctrl + H', description: 'Show this help' },
   { key: 'Esc', description: 'Close dialogs' },
+  { key: 'Tab', description: 'Navigate between elements' },
+  { key: 'Enter', description: 'Activate focused element' },
+  { key: 'Space', description: 'Toggle checkboxes/buttons' },
 ]
 
 export default function KeyboardShortcuts() {
