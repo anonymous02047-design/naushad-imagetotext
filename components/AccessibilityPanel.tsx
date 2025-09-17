@@ -14,31 +14,60 @@ import {
   MousePointer,
   Keyboard,
   Settings,
-  Link
+  Link,
+  RotateCcw,
+  Plus,
+  Minus,
+  AlignLeft,
+  AlignCenter,
+  Image,
+  ImageOff,
+  MousePointer2,
+  Speaker
 } from 'lucide-react'
 
 interface AccessibilitySettings {
-  fontSize: 'small' | 'medium' | 'large' | 'extra-large'
+  // Color Contrast
   contrast: 'normal' | 'high' | 'extra-high'
-  reducedMotion: boolean
+  highlightLinks: boolean
+  invertColors: boolean
+  saturation: 'normal' | 'low' | 'high'
+  
+  // Text Size
+  fontSize: 'small' | 'medium' | 'large' | 'extra-large'
+  textSpacing: 'normal' | 'wide' | 'extra-wide'
+  lineHeight: 'normal' | 'wide' | 'extra-wide'
+  
+  // Others
+  hideImages: boolean
+  bigCursor: boolean
   screenReader: boolean
-  keyboardNavigation: boolean
+  reducedMotion: boolean
   focusIndicators: boolean
   soundEffects: boolean
-  highlightLinks: boolean
 }
 
 export default function AccessibilityPanel() {
   const [isOpen, setIsOpen] = useState(false)
   const [settings, setSettings] = useState<AccessibilitySettings>({
-    fontSize: 'medium',
+    // Color Contrast
     contrast: 'normal',
-    reducedMotion: false,
+    highlightLinks: false,
+    invertColors: false,
+    saturation: 'normal',
+    
+    // Text Size
+    fontSize: 'medium',
+    textSpacing: 'normal',
+    lineHeight: 'normal',
+    
+    // Others
+    hideImages: false,
+    bigCursor: false,
     screenReader: false,
-    keyboardNavigation: true,
+    reducedMotion: false,
     focusIndicators: true,
-    soundEffects: false,
-    highlightLinks: false
+    soundEffects: false
   })
 
   // Load settings from localStorage
@@ -58,23 +87,73 @@ export default function AccessibilityPanel() {
   const applyAccessibilitySettings = (newSettings: AccessibilitySettings) => {
     const root = document.documentElement
     
-    // Font size - apply to body instead of root to avoid conflicts
+    // Font size
     const fontSizeMap = {
       'small': '14px',
       'medium': '16px',
       'large': '18px',
       'extra-large': '20px'
     }
-    
-    // Apply font size with important to override other styles
     document.body.style.setProperty('font-size', fontSizeMap[newSettings.fontSize], 'important')
 
-    // Contrast - remove all contrast classes first, then add the selected one
+    // Text spacing
+    const textSpacingMap = {
+      'normal': '0px',
+      'wide': '0.1em',
+      'extra-wide': '0.2em'
+    }
+    document.body.style.setProperty('letter-spacing', textSpacingMap[newSettings.textSpacing], 'important')
+
+    // Line height
+    const lineHeightMap = {
+      'normal': '1.5',
+      'wide': '1.8',
+      'extra-wide': '2.2'
+    }
+    document.body.style.setProperty('line-height', lineHeightMap[newSettings.lineHeight], 'important')
+
+    // Contrast modes
     root.classList.remove('high-contrast', 'extra-high-contrast')
     if (newSettings.contrast === 'high') {
       root.classList.add('high-contrast')
     } else if (newSettings.contrast === 'extra-high') {
       root.classList.add('extra-high-contrast')
+    }
+
+    // Color inversion
+    if (newSettings.invertColors) {
+      root.classList.add('invert-colors')
+    } else {
+      root.classList.remove('invert-colors')
+    }
+
+    // Saturation
+    root.classList.remove('low-saturation', 'high-saturation')
+    if (newSettings.saturation === 'low') {
+      root.classList.add('low-saturation')
+    } else if (newSettings.saturation === 'high') {
+      root.classList.add('high-saturation')
+    }
+
+    // Link highlighting
+    if (newSettings.highlightLinks) {
+      root.classList.add('highlight-links')
+    } else {
+      root.classList.remove('highlight-links')
+    }
+
+    // Hide images
+    if (newSettings.hideImages) {
+      root.classList.add('hide-images')
+    } else {
+      root.classList.remove('hide-images')
+    }
+
+    // Big cursor
+    if (newSettings.bigCursor) {
+      root.classList.add('big-cursor')
+    } else {
+      root.classList.remove('big-cursor')
     }
 
     // Reduced motion
@@ -90,16 +169,6 @@ export default function AccessibilityPanel() {
     } else {
       root.classList.remove('enhanced-focus')
     }
-
-    // Link highlighting
-    if (newSettings.highlightLinks) {
-      root.classList.add('highlight-links')
-    } else {
-      root.classList.remove('highlight-links')
-    }
-
-    // Screen reader announcements - don't set on root, handle in component
-    // This prevents conflicts with other components
   }
 
   const updateSetting = <K extends keyof AccessibilitySettings>(
@@ -237,184 +306,319 @@ export default function AccessibilityPanel() {
                 </button>
               </div>
 
-              <div className="p-3 sm:p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                <div className="space-y-4 sm:space-y-6">
-                  {/* Font Size */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                      <Type className="w-4 h-4 inline mr-2" />
-                      Font Size
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {(['small', 'medium', 'large', 'extra-large'] as const).map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => {
-                            updateSetting('fontSize', size)
-                            announceToScreenReader(`Font size changed to ${size}`)
-                            playSound('click')
-                          }}
-                          className={`p-2 sm:p-3 rounded-lg border transition-colors ${
-                            settings.fontSize === size
-                              ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
-                              : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                          }`}
-                          aria-pressed={settings.fontSize === size}
-                        >
-                          <div className="text-center">
-                            <div className="font-semibold capitalize text-xs sm:text-sm">{size}</div>
-                            <div className="text-xs opacity-75">
-                              {size === 'small' && '14px'}
-                              {size === 'medium' && '16px'}
-                              {size === 'large' && '18px'}
-                              {size === 'extra-large' && '20px'}
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+              <div className="p-4 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div className="space-y-6">
+                  {/* Reset Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => {
+                        setSettings({
+                          contrast: 'normal',
+                          highlightLinks: false,
+                          invertColors: false,
+                          saturation: 'normal',
+                          fontSize: 'medium',
+                          textSpacing: 'normal',
+                          lineHeight: 'normal',
+                          hideImages: false,
+                          bigCursor: false,
+                          screenReader: false,
+                          reducedMotion: false,
+                          focusIndicators: true,
+                          soundEffects: false
+                        })
+                        announceToScreenReader('All accessibility settings reset')
+                        playSound('click')
+                      }}
+                      className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Reset all settings"
+                    >
+                      <RotateCcw className="w-5 h-5" />
+                    </button>
                   </div>
 
-                  {/* Contrast */}
+                  {/* Color Contrast Section */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                      <Contrast className="w-4 h-4 inline mr-2" />
-                      Contrast Level
-                    </label>
-                    <div className="space-y-2">
-                      {(['normal', 'high', 'extra-high'] as const).map((level) => (
-                        <button
-                          key={level}
-                          onClick={() => {
-                            updateSetting('contrast', level)
-                            announceToScreenReader(`Contrast changed to ${level}`)
-                            playSound('click')
-                          }}
-                          className={`w-full p-2 sm:p-3 rounded-lg border transition-colors text-left ${
-                            settings.contrast === level
-                              ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
-                              : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                          }`}
-                          aria-pressed={settings.contrast === level}
-                        >
-                          <div className="font-semibold capitalize text-sm">{level} Contrast</div>
-                          <div className="text-xs opacity-75 mt-1">
-                            {level === 'normal' && 'Standard contrast for comfortable reading'}
-                            {level === 'high' && 'Enhanced contrast for better visibility'}
-                            {level === 'extra-high' && 'Maximum contrast for accessibility'}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Toggle Options */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Additional Options
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Contrast className="w-5 h-5 mr-2 text-primary-600" />
+                      Color Contrast
                     </h3>
-                    
-                    {[
-                      {
-                        key: 'reducedMotion' as const,
-                        label: 'Reduce Motion',
-                        description: 'Minimize animations and transitions',
-                        icon: settings.reducedMotion ? EyeOff : Eye
-                      },
-                      {
-                        key: 'screenReader' as const,
-                        label: 'Screen Reader Support',
-                        description: 'Enhanced announcements for screen readers',
-                        icon: Volume2
-                      },
-                      {
-                        key: 'keyboardNavigation' as const,
-                        label: 'Enhanced Keyboard Navigation',
-                        description: 'Improved keyboard navigation support',
-                        icon: Keyboard
-                      },
-                      {
-                        key: 'focusIndicators' as const,
-                        label: 'Enhanced Focus Indicators',
-                        description: 'More visible focus indicators',
-                        icon: MousePointer
-                      },
-                      {
-                        key: 'soundEffects' as const,
-                        label: 'Sound Effects',
-                        description: 'Audio feedback for interactions',
-                        icon: settings.soundEffects ? Volume2 : VolumeX
-                      },
-                      {
-                        key: 'highlightLinks' as const,
-                        label: 'Highlight Links',
-                        description: 'Add underlines and highlighting to links',
-                        icon: Link
-                      }
-                    ].map((option) => (
-                      <div key={option.key} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                          <option.icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
-                              {option.label}
-                            </div>
-                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                              {option.description}
-                            </div>
-                          </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {/* High Contrast */}
+                      <button
+                        onClick={() => {
+                          updateSetting('contrast', 'high')
+                          announceToScreenReader('High contrast enabled')
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.contrast === 'high'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <div className="w-4 h-4 bg-gray-800 border-2 border-gray-800"></div>
                         </div>
-                        <button
-                          onClick={() => {
-                            updateSetting(option.key, !settings[option.key])
-                            announceToScreenReader(`${option.label} ${!settings[option.key] ? 'enabled' : 'disabled'}`)
-                            playSound('click')
-                          }}
-                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                            settings[option.key]
-                              ? 'bg-primary-600'
-                              : 'bg-gray-300 dark:bg-gray-600'
-                          }`}
-                          role="switch"
-                          aria-checked={settings[option.key]}
-                          aria-label={`Toggle ${option.label}`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
-                              settings[option.key] ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    ))}
+                        <span className="text-xs font-medium">High Contrast</span>
+                      </button>
+
+                      {/* Normal Contrast */}
+                      <button
+                        onClick={() => {
+                          updateSetting('contrast', 'normal')
+                          announceToScreenReader('Normal contrast enabled')
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.contrast === 'normal'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-gray-600"></div>
+                        </div>
+                        <span className="text-xs font-medium">Normal Contrast</span>
+                      </button>
+
+                      {/* Highlight Links */}
+                      <button
+                        onClick={() => {
+                          updateSetting('highlightLinks', !settings.highlightLinks)
+                          announceToScreenReader(`Link highlighting ${!settings.highlightLinks ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.highlightLinks
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Link className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Highlight Links</span>
+                      </button>
+
+                      {/* Invert Colors */}
+                      <button
+                        onClick={() => {
+                          updateSetting('invertColors', !settings.invertColors)
+                          announceToScreenReader(`Color inversion ${!settings.invertColors ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.invertColors
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-gradient-to-r from-black to-white"></div>
+                        </div>
+                        <span className="text-xs font-medium">Invert</span>
+                      </button>
+
+                      {/* Saturation */}
+                      <button
+                        onClick={() => {
+                          const nextSaturation = settings.saturation === 'normal' ? 'low' : settings.saturation === 'low' ? 'high' : 'normal'
+                          updateSetting('saturation', nextSaturation)
+                          announceToScreenReader(`Saturation set to ${nextSaturation}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.saturation !== 'normal'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                        </div>
+                        <span className="text-xs font-medium">Saturation</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Accessibility Info */}
-                  <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div className="text-sm text-blue-800 dark:text-blue-200">
-                      <p className="font-medium mb-2 text-sm sm:text-base">Accessibility Features:</p>
-                      <ul className="space-y-1 text-xs sm:text-sm">
-                        <li>• Adjustable font sizes for better readability</li>
-                        <li>• High contrast modes for visual accessibility</li>
-                        <li>• Reduced motion for users with vestibular disorders</li>
-                        <li>• Enhanced keyboard navigation support</li>
-                        <li>• Screen reader announcements</li>
-                        <li>• Audio feedback for interactions</li>
-                        <li>• WCAG 2.1 AA compliant design</li>
-                      </ul>
+                  {/* Text Size Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Type className="w-5 h-5 mr-2 text-primary-600" />
+                      Text Size
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {/* Font Size Increase */}
+                      <button
+                        onClick={() => {
+                          const sizes = ['small', 'medium', 'large', 'extra-large'] as const
+                          const currentIndex = sizes.indexOf(settings.fontSize)
+                          const nextIndex = Math.min(currentIndex + 1, sizes.length - 1)
+                          updateSetting('fontSize', sizes[nextIndex])
+                          announceToScreenReader(`Font size increased to ${sizes[nextIndex]}`)
+                          playSound('click')
+                        }}
+                        className="p-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center"
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <span className="text-lg font-bold">A</span>
+                          <Plus className="w-3 h-3 ml-1" />
+                        </div>
+                        <span className="text-xs font-medium">Font Size Increase</span>
+                      </button>
+
+                      {/* Font Size Decrease */}
+                      <button
+                        onClick={() => {
+                          const sizes = ['small', 'medium', 'large', 'extra-large'] as const
+                          const currentIndex = sizes.indexOf(settings.fontSize)
+                          const nextIndex = Math.max(currentIndex - 1, 0)
+                          updateSetting('fontSize', sizes[nextIndex])
+                          announceToScreenReader(`Font size decreased to ${sizes[nextIndex]}`)
+                          playSound('click')
+                        }}
+                        className="p-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex flex-col items-center"
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <span className="text-lg font-bold">A</span>
+                          <Minus className="w-3 h-3 ml-1" />
+                        </div>
+                        <span className="text-xs font-medium">Font Size Decrease</span>
+                      </button>
+
+                      {/* Normal Font */}
+                      <button
+                        onClick={() => {
+                          updateSetting('fontSize', 'medium')
+                          announceToScreenReader('Font size reset to normal')
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.fontSize === 'medium'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <span className="text-lg font-bold">A</span>
+                        </div>
+                        <span className="text-xs font-medium">Normal Font</span>
+                      </button>
+
+                      {/* Text Spacing */}
+                      <button
+                        onClick={() => {
+                          const spacings = ['normal', 'wide', 'extra-wide'] as const
+                          const currentIndex = spacings.indexOf(settings.textSpacing)
+                          const nextIndex = (currentIndex + 1) % spacings.length
+                          updateSetting('textSpacing', spacings[nextIndex])
+                          announceToScreenReader(`Text spacing set to ${spacings[nextIndex]}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.textSpacing !== 'normal'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <AlignLeft className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-medium">Text Spacing</span>
+                      </button>
+
+                      {/* Line Height */}
+                      <button
+                        onClick={() => {
+                          const heights = ['normal', 'wide', 'extra-wide'] as const
+                          const currentIndex = heights.indexOf(settings.lineHeight)
+                          const nextIndex = (currentIndex + 1) % heights.length
+                          updateSetting('lineHeight', heights[nextIndex])
+                          announceToScreenReader(`Line height set to ${heights[nextIndex]}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.lineHeight !== 'normal'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-6 h-6 mb-2 flex items-center justify-center">
+                          <AlignCenter className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-medium">Line Height</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Others Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Settings className="w-5 h-5 mr-2 text-primary-600" />
+                      Others
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Hide Images */}
+                      <button
+                        onClick={() => {
+                          updateSetting('hideImages', !settings.hideImages)
+                          announceToScreenReader(`Images ${!settings.hideImages ? 'hidden' : 'shown'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.hideImages
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {settings.hideImages ? <ImageOff className="w-6 h-6 mb-2" /> : <Image className="w-6 h-6 mb-2" />}
+                        <span className="text-xs font-medium">Hide Images</span>
+                      </button>
+
+                      {/* Big Cursor */}
+                      <button
+                        onClick={() => {
+                          updateSetting('bigCursor', !settings.bigCursor)
+                          announceToScreenReader(`Big cursor ${!settings.bigCursor ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.bigCursor
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <MousePointer2 className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Big Cursor</span>
+                      </button>
+
+                      {/* Screen Reader */}
+                      <button
+                        onClick={() => {
+                          updateSetting('screenReader', !settings.screenReader)
+                          announceToScreenReader(`Screen reader support ${!settings.screenReader ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.screenReader
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Speaker className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Screen Reader</span>
+                      </button>
                     </div>
                   </div>
 
                   {/* Close Button */}
-                  <div className="flex justify-end pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={() => {
                         setIsOpen(false)
                         announceToScreenReader('Accessibility panel closed')
                         playSound('click')
                       }}
-                      className="px-4 sm:px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base"
+                      className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium"
                       aria-label="Close accessibility panel"
                     >
                       Done
