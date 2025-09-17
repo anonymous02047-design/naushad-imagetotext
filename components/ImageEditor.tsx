@@ -389,18 +389,41 @@ export default function ImageEditor({ className }: ImageEditorProps) {
   }
 
   const downloadImage = (image: EditedImage) => {
-    // Create a blob from the edited file
-    const blob = new Blob([image.edited], { type: image.edited.type })
-    const url = URL.createObjectURL(blob)
-    
-    const link = document.createElement('a')
-    link.href = url
-    link.download = image.edited.name
-    link.click()
-    
-    // Clean up the URL object
-    URL.revokeObjectURL(url)
-    toast.success('Edited image downloaded')
+    try {
+      // Use the dataUrl directly which contains the edited image data
+      const link = document.createElement('a')
+      link.href = image.dataUrl
+      link.download = image.edited.name
+      link.click()
+      toast.success('Edited image downloaded')
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error('Failed to download image')
+    }
+  }
+
+  const downloadEditedImage = async () => {
+    if (!currentImage) return
+
+    try {
+      setIsProcessing(true)
+      
+      // Process the image to get the latest edited version
+      const editedImage = await processImage(currentImage.original)
+      if (editedImage) {
+        // Create download link with the edited data
+        const link = document.createElement('a')
+        link.href = editedImage.dataUrl
+        link.download = editedImage.edited.name
+        link.click()
+        toast.success('Edited image downloaded successfully')
+      }
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error('Failed to download edited image')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const removeImage = (index: number) => {
@@ -673,6 +696,27 @@ export default function ImageEditor({ className }: ImageEditorProps) {
                     </>
                   )}
                 </button>
+
+                {/* Download Edited Image Button */}
+                {currentImage && (
+                  <button
+                    onClick={downloadEditedImage}
+                    disabled={isProcessing}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition-colors duration-200 font-medium"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5 mr-2" />
+                        Download Edited Image
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

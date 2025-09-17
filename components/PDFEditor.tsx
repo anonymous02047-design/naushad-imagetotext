@@ -353,18 +353,41 @@ export default function PDFEditor({ className }: PDFEditorProps) {
   }
 
   const downloadPDF = (pdf: EditedPDF) => {
-    // Create a blob from the edited file
-    const blob = new Blob([pdf.edited], { type: pdf.edited.type })
-    const url = URL.createObjectURL(blob)
-    
-    const link = document.createElement('a')
-    link.href = url
-    link.download = pdf.edited.name
-    link.click()
-    
-    // Clean up the URL object
-    URL.revokeObjectURL(url)
-    toast.success('Edited PDF downloaded')
+    try {
+      // Use the dataUrl directly which contains the edited PDF data
+      const link = document.createElement('a')
+      link.href = pdf.dataUrl
+      link.download = pdf.edited.name
+      link.click()
+      toast.success('Edited PDF downloaded')
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error('Failed to download PDF')
+    }
+  }
+
+  const downloadEditedPDF = async () => {
+    if (!currentPdf) return
+
+    try {
+      setIsProcessing(true)
+      
+      // Process the PDF to get the latest edited version
+      const editedPDF = await processPDF(currentPdf.original)
+      if (editedPDF) {
+        // Create download link with the edited data
+        const link = document.createElement('a')
+        link.href = editedPDF.dataUrl
+        link.download = editedPDF.edited.name
+        link.click()
+        toast.success('Edited PDF downloaded successfully')
+      }
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error('Failed to download edited PDF')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const removePDF = (index: number) => {
@@ -656,6 +679,27 @@ export default function PDFEditor({ className }: PDFEditorProps) {
                     </>
                   )}
                 </button>
+
+                {/* Download Edited PDF Button */}
+                {currentPdf && (
+                  <button
+                    onClick={downloadEditedPDF}
+                    disabled={isProcessing}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition-colors duration-200 font-medium"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5 mr-2" />
+                        Download Edited PDF
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
