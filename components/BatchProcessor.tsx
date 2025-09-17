@@ -73,28 +73,65 @@ export default function BatchProcessor() {
           } else if (file.type === 'pdf') {
             // Process PDF with PDF.js
             const pdfjsLib = await import('pdfjs-dist')
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
             
-            const arrayBuffer = await file.file.arrayBuffer()
-            const pdf = await pdfjsLib.getDocument({ 
-              data: arrayBuffer,
-              useWorkerFetch: false,
-              isEvalSupported: false,
-              useSystemFonts: true
-            }).promise
-            
-            const allText: string[] = []
-            
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-              const page = await pdf.getPage(pageNum)
-              const textContent = await page.getTextContent()
-              const pageText = textContent.items
-                .map((item: any) => item.str)
-                .join(' ')
-              allText.push(pageText)
+            // Set worker source with fallback
+            if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
             }
             
-            extractedText = allText.join('\n\n')
+            try {
+              const arrayBuffer = await file.file.arrayBuffer()
+              console.log(`Processing PDF: ${file.file.name}, size: ${arrayBuffer.byteLength} bytes`)
+              
+              const pdf = await pdfjsLib.getDocument({ 
+                data: arrayBuffer,
+                useWorkerFetch: false,
+                isEvalSupported: false,
+                useSystemFonts: true,
+                verbosity: 0,
+                disableAutoFetch: true,
+                disableStream: true
+              }).promise
+              
+              console.log(`PDF loaded: ${pdf.numPages} pages`)
+              const allText: string[] = []
+              
+              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                try {
+                  const page = await pdf.getPage(pageNum)
+                  const textContent = await page.getTextContent()
+                  
+                  console.log(`Page ${pageNum} text items:`, textContent.items.length)
+                  
+                  const pageText = textContent.items
+                    .filter((item: any) => item.str && typeof item.str === 'string' && item.str.trim().length > 0)
+                    .map((item: any) => item.str.trim())
+                    .join(' ')
+                  
+                  if (pageText.trim().length > 0) {
+                    allText.push(`Page ${pageNum}:\n${pageText}`)
+                    console.log(`Page ${pageNum} extracted text length:`, pageText.length)
+                  } else {
+                    console.log(`Page ${pageNum} has no extractable text`)
+                  }
+                } catch (pageError) {
+                  console.error(`Error processing page ${pageNum}:`, pageError)
+                  allText.push(`Page ${pageNum}: Error extracting text`)
+                }
+              }
+              
+              if (allText.length > 0) {
+                extractedText = allText.join('\n\n')
+                console.log(`Total extracted text length:`, extractedText.length)
+              } else {
+                extractedText = `No text content found in PDF "${file.file.name}". This might be an image-based PDF that requires OCR processing.`
+                console.log(`No text found in PDF: ${file.file.name}`)
+              }
+              
+            } catch (pdfError) {
+              console.error('PDF processing error:', pdfError)
+              extractedText = `Error processing PDF "${file.file.name}": ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`
+            }
           }
           
           setFiles(prev => prev.map(f => 
