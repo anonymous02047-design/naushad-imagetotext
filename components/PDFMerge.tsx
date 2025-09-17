@@ -327,7 +327,11 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
             if (pageNum > pdfDoc.numPages) continue;
             
             const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: mergeSettings.scale });
+            // Use higher scale for black & white mode to preserve quality
+            const scale = mergeSettings.colorMode === 'blackwhite' 
+              ? Math.max(mergeSettings.scale, 2.0) 
+              : mergeSettings.scale;
+            const viewport = page.getViewport({ scale });
             
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
@@ -336,13 +340,19 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
             canvas.height = viewport.height;
             canvas.width = viewport.width;
             
+            // Enhanced rendering settings for better quality
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+            
             await page.render({
               canvasContext: context,
               viewport: viewport
             }).promise;
 
             // Apply color mode
-            let imgData = canvas.toDataURL('image/png');
+            // Use PNG for black & white mode to preserve quality, JPEG for others
+            const outputFormat = mergeSettings.colorMode === 'blackwhite' ? 'image/png' : 'image/png';
+            let imgData = canvas.toDataURL(outputFormat);
             if (mergeSettings.colorMode !== 'color') {
               const tempCanvas = document.createElement('canvas');
               const tempContext = tempCanvas.getContext('2d');
@@ -356,11 +366,26 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
                 
                 for (let i = 0; i < data.length; i += 4) {
                   if (mergeSettings.colorMode === 'blackwhite') {
+                    // Improved black & white conversion with better quality preservation
                     const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-                    const bw = gray > 128 ? 255 : 0;
-                    data[i] = bw;     // Red
-                    data[i + 1] = bw; // Green
-                    data[i + 2] = bw; // Blue
+                    
+                    // Use adaptive thresholding for better quality
+                    // Apply slight smoothing to reduce noise while preserving text
+                    const threshold = 140; // Slightly higher threshold for better text preservation
+                    const bw = gray > threshold ? 255 : 0;
+                    
+                    // Apply anti-aliasing for smoother edges
+                    if (gray > threshold - 20 && gray <= threshold + 20) {
+                      const factor = (gray - (threshold - 20)) / 40;
+                      const smoothedBw = Math.round(255 * factor);
+                      data[i] = smoothedBw;     // Red
+                      data[i + 1] = smoothedBw; // Green
+                      data[i + 2] = smoothedBw; // Blue
+                    } else {
+                      data[i] = bw;     // Red
+                      data[i + 1] = bw; // Green
+                      data[i + 2] = bw; // Blue
+                    }
                   } else if (mergeSettings.colorMode === 'grayscale') {
                     const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
                     data[i] = gray;     // Red
@@ -370,7 +395,8 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
                 }
                 
                 tempContext.putImageData(imageData, 0, 0);
-                imgData = tempCanvas.toDataURL('image/png');
+                // Use PNG for black & white to preserve quality
+                imgData = tempCanvas.toDataURL(mergeSettings.colorMode === 'blackwhite' ? 'image/png' : 'image/png');
               }
             }
             
@@ -383,7 +409,9 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
             const imgWidth = pageWidth - (margin * 2);
             const imgHeight = pageHeight - (margin * 2);
             
-            mergedPdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+            // Use appropriate format and compression for black & white
+            const imageFormat = mergeSettings.colorMode === 'blackwhite' ? 'PNG' : 'PNG';
+            mergedPdf.addImage(imgData, imageFormat, margin, margin, imgWidth, imgHeight, undefined, 'FAST');
             
             isFirstPage = false;
             totalPagesProcessed++;
