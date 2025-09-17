@@ -241,7 +241,7 @@ export default function Home() {
                     className="flex flex-col sm:flex-row justify-center items-center mb-6 sm:mb-8 space-y-3 sm:space-y-0 sm:space-x-4"
                   >
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-200 dark:border-gray-700 w-full sm:w-auto overflow-x-auto">
-                      <div className="flex space-x-1 min-w-max sm:min-w-0">
+                      <div className="flex space-x-1 min-w-max sm:min-w-0 pb-1 sm:pb-0">
                         <button
                           onClick={() => setActiveTab('grid')}
                           className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
@@ -250,7 +250,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          All Services
+                          <span className="hidden sm:inline">All Services</span>
+                          <span className="sm:hidden">All</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('single')}
@@ -260,7 +261,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          Single Image
+                          <span className="hidden sm:inline">Single Image</span>
+                          <span className="sm:hidden">Single</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('batch')}
@@ -280,7 +282,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          PDF to Text
+                          <span className="hidden sm:inline">PDF to Text</span>
+                          <span className="sm:hidden">PDF</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('qr')}
@@ -290,7 +293,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          QR Generator
+                          <span className="hidden sm:inline">QR Generator</span>
+                          <span className="sm:hidden">QR</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('url')}
@@ -300,7 +304,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          URL Shortener
+                          <span className="hidden sm:inline">URL Shortener</span>
+                          <span className="sm:hidden">URL</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('img2pdf')}
@@ -310,7 +315,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          Image to PDF
+                          <span className="hidden sm:inline">Image to PDF</span>
+                          <span className="sm:hidden">I2P</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('pdf2img')}
@@ -320,7 +326,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          PDF to Image
+                          <span className="hidden sm:inline">PDF to Image</span>
+                          <span className="sm:hidden">P2I</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('compress-img')}
@@ -330,7 +337,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          Compress Image
+                          <span className="hidden sm:inline">Compress Image</span>
+                          <span className="sm:hidden">C.Img</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('compress-pdf')}
@@ -340,7 +348,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          Compress PDF
+                          <span className="hidden sm:inline">Compress PDF</span>
+                          <span className="sm:hidden">C.PDF</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('edit-img')}
@@ -350,7 +359,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          Image Editor
+                          <span className="hidden sm:inline">Image Editor</span>
+                          <span className="sm:hidden">E.Img</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('edit-pdf')}
@@ -360,7 +370,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          PDF Editor
+                          <span className="hidden sm:inline">PDF Editor</span>
+                          <span className="sm:hidden">E.PDF</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('merge-pdf')}
@@ -370,7 +381,8 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
-                          PDF Merger
+                          <span className="hidden sm:inline">PDF Merger</span>
+                          <span className="sm:hidden">Merge</span>
                         </button>
                       </div>
                     </div>

@@ -144,7 +144,18 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
           const pdf = await import('pdfjs-dist');
-          const loadingTask = pdf.getDocument({ data: arrayBuffer });
+          
+          // Configure worker for production
+          if (typeof window !== 'undefined') {
+            pdf.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+          }
+          
+          const loadingTask = pdf.getDocument({ 
+            data: arrayBuffer,
+            useWorkerFetch: false,
+            isEvalSupported: false,
+            useSystemFonts: true
+          });
           const pdfDoc = await loadingTask.promise;
           resolve(pdfDoc.numPages);
         } catch (err) {
@@ -164,7 +175,18 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
           const pdf = await import('pdfjs-dist');
-          const loadingTask = pdf.getDocument({ data: arrayBuffer });
+          
+          // Configure worker for production
+          if (typeof window !== 'undefined') {
+            pdf.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+          }
+          
+          const loadingTask = pdf.getDocument({ 
+            data: arrayBuffer,
+            useWorkerFetch: false,
+            isEvalSupported: false,
+            useSystemFonts: true
+          });
           const pdfDoc = await loadingTask.promise;
           
           const previews: string[] = [];
@@ -250,6 +272,11 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
       const { default: jsPDF } = await import('jspdf');
       const pdf = await import('pdfjs-dist');
       
+      // Configure worker for production
+      if (typeof window !== 'undefined') {
+        pdf.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+      }
+      
       // Get page dimensions based on settings
       const dimensions = getPageSizeDimensions(mergeSettings.pageSize, mergeSettings.orientation);
       const pageWidth = mergeSettings.pageSize === 'Custom' ? mergeSettings.customWidth || 210 : dimensions.width;
@@ -271,7 +298,12 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
       for (const pdfFile of pdfFiles) {
         try {
           const arrayBuffer = await pdfFile.file.arrayBuffer();
-          const loadingTask = pdf.getDocument({ data: arrayBuffer });
+          const loadingTask = pdf.getDocument({ 
+            data: arrayBuffer,
+            useWorkerFetch: false,
+            isEvalSupported: false,
+            useSystemFonts: true
+          });
           const pdfDoc = await loadingTask.promise;
           
           const pagesToProcess = selectedPages[pdfFile.id] || Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);

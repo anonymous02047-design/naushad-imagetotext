@@ -6,6 +6,34 @@
   :root {
     --toast-bg: #363636;
     --toast-color: #fff;
+    --contrast-level: 1;
+    --highlight-links: none;
+    --invert-colors: 0;
+    --saturation: 1;
+    --base-font-size: 16px;
+    --text-spacing: 1;
+    --line-height: 1;
+    --hide-images: block;
+    --big-cursor: default;
+    --reduced-motion: auto;
+    --focus-indicators: 2px solid #3b82f6;
+    --sound-effects: 0;
+    --dyslexia-friendly: 0;
+    --color-blind-support: 0;
+    --reading-guide: 0;
+    --text-to-speech: 0;
+    --auto-scroll: 0;
+    --sticky-headers: 0;
+    --reading-mode: 0;
+    --dark-mode: 0;
+    --high-contrast-text: 0;
+    --large-buttons: 0;
+    --simplified-layout: 0;
+    --voice-commands: 0;
+    --gesture-navigation: 0;
+    --timeout-warning: 0;
+    --error-prevention: 0;
+    --cognitive-load: 0;
   }
   
   .dark {
@@ -15,10 +43,39 @@
   
   html {
     font-family: system-ui, sans-serif;
+    font-size: var(--base-font-size);
+    scroll-behavior: smooth;
   }
   
   body {
     @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300;
+    line-height: var(--line-height);
+    letter-spacing: calc(var(--text-spacing) * 0.1em);
+    filter: contrast(var(--contrast-level)) saturate(var(--saturation)) invert(var(--invert-colors));
+  }
+  
+  /* Mobile-first responsive design */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+    
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    html {
+      font-size: 15px;
+    }
+  }
+  
+  @media (min-width: 1025px) {
+    html {
+      font-size: 16px;
+    }
   }
 }
 
@@ -37,6 +94,65 @@
   
   .input-field {
     @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200;
+  }
+  
+  /* Accessibility Classes */
+  .accessibility-highlight-links a {
+    text-decoration: underline !important;
+  }
+  
+  .accessibility-hide-images img {
+    display: none !important;
+  }
+  
+  .accessibility-big-cursor {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23000" opacity="0.8"/></svg>'), auto !important;
+  }
+  
+  .accessibility-reduced-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .accessibility-no-focus *:focus {
+    outline: none !important;
+  }
+  
+  .accessibility-dyslexia-friendly {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', cursive !important;
+  }
+  
+  .accessibility-large-buttons button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 24px !important;
+  }
+  
+  .accessibility-simplified-layout .card {
+    border: 2px solid #000 !important;
+    background: #fff !important;
+  }
+  
+  .accessibility-high-contrast-text {
+    color: #000 !important;
+    background: #fff !important;
+  }
+  
+  .accessibility-reading-mode {
+    max-width: 65ch !important;
+    margin: 0 auto !important;
+    line-height: 1.6 !important;
+  }
+  
+  .accessibility-sticky-headers h1,
+  .accessibility-sticky-headers h2,
+  .accessibility-sticky-headers h3 {
+    position: sticky !important;
+    top: 0 !important;
+    background: #fff !important;
+    z-index: 10 !important;
+    padding: 1rem 0 !important;
   }
 }
 
