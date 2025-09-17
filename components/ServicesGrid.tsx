@@ -104,6 +104,24 @@ const services: Service[] = [
     icon: Link,
     color: 'from-teal-500 to-teal-600',
     features: ['Custom aliases', 'Click tracking', 'QR codes', 'Analytics dashboard']
+  },
+  {
+    id: 'edit-img',
+    title: 'Image Editor',
+    description: 'Advanced image editing with resize, crop, enhance, and color conversion.',
+    icon: Settings,
+    color: 'from-cyan-500 to-cyan-600',
+    features: ['Resize & Crop', 'Color adjustments', 'Filters & Effects', 'Undo/Redo'],
+    isNew: true
+  },
+  {
+    id: 'edit-pdf',
+    title: 'PDF Editor',
+    description: 'Edit PDFs with resize, crop, enhance, and color conversion options.',
+    icon: FileText,
+    color: 'from-amber-500 to-amber-600',
+    features: ['Page editing', 'Color conversion', 'Size adjustment', 'Batch processing'],
+    isNew: true
   }
 ]
 

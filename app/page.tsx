@@ -17,6 +17,8 @@ import ImageToPDF from '@/components/ImageToPDF'
 import PDFToImage from '@/components/PDFToImage'
 import ImageCompressor from '@/components/ImageCompressor'
 import PDFCompressor from '@/components/PDFCompressor'
+import ImageEditor from '@/components/ImageEditor'
+import PDFEditor from '@/components/PDFEditor'
 import ServicesGrid from '@/components/ServicesGrid'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
@@ -40,7 +42,7 @@ export default function Home() {
     enableDeskew: true,
     enableDenoise: false
   })
-  const [activeTab, setActiveTab] = useState<'grid' | 'single' | 'batch' | 'pdf' | 'qr' | 'url' | 'img2pdf' | 'pdf2img' | 'compress-img' | 'compress-pdf'>('grid')
+  const [activeTab, setActiveTab] = useState<'grid' | 'single' | 'batch' | 'pdf' | 'qr' | 'url' | 'img2pdf' | 'pdf2img' | 'compress-img' | 'compress-pdf' | 'edit-img' | 'edit-pdf'>('grid')
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file)
@@ -339,6 +341,26 @@ export default function Home() {
                         >
                           Compress PDF
                         </button>
+                        <button
+                          onClick={() => setActiveTab('edit-img')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'edit-img'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          Image Editor
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('edit-pdf')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'edit-pdf'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          PDF Editor
+                        </button>
                       </div>
                     </div>
                     
@@ -509,6 +531,24 @@ export default function Home() {
               className="max-w-4xl mx-auto"
             >
               <PDFCompressor />
+            </motion.div>
+          ) : activeTab === 'edit-img' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-6xl mx-auto"
+            >
+              <ImageEditor />
+            </motion.div>
+          ) : activeTab === 'edit-pdf' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-6xl mx-auto"
+            >
+              <PDFEditor />
             </motion.div>
           ) : (
             <motion.div
