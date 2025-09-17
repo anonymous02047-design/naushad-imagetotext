@@ -19,6 +19,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react'
+import QRCodeLib from 'qrcode'
 import toast from 'react-hot-toast'
 
 interface URLShortenerProps {
@@ -107,6 +108,21 @@ export default function URLShortener({ className = '' }: URLShortenerProps) {
       const shortUrl = generateShortUrl(originalUrl, customAlias || undefined)
       setShortenedUrl(shortUrl)
 
+      // Generate QR code for the shortened URL
+      let qrCodeData = ''
+      try {
+        qrCodeData = await QRCodeLib.toDataURL(shortUrl, {
+          width: 128,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        })
+      } catch (error) {
+        console.error('Error generating QR code:', error)
+      }
+
       // Add to history
       const newShortUrl: ShortenedURL = {
         id: Date.now().toString(),
@@ -115,7 +131,7 @@ export default function URLShortener({ className = '' }: URLShortenerProps) {
         customAlias: customAlias || undefined,
         clicks: 0,
         createdAt: new Date(),
-        qrCode: shortUrl // In a real app, you'd generate actual QR code
+        qrCode: qrCodeData
       }
       
       setUrlHistory(prev => [newShortUrl, ...prev.slice(0, 49)]) // Keep last 50
@@ -141,19 +157,33 @@ export default function URLShortener({ className = '' }: URLShortenerProps) {
   }
 
   // Download QR code
-  const downloadQRCode = () => {
+  const downloadQRCode = async () => {
     if (!selectedUrl) return
     
-    // In a real app, you'd generate actual QR code
-    const qrData = `QR Code for: ${selectedUrl.shortUrl}\nOriginal URL: ${selectedUrl.originalUrl}`
-    const blob = new Blob([qrData], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `qr-code-${selectedUrl.id}.txt`
-    link.click()
-    URL.revokeObjectURL(url)
-    toast.success('QR code data downloaded!')
+    try {
+      // Generate actual QR code image
+      const qrDataURL = await QRCodeLib.toDataURL(selectedUrl.shortUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      })
+      
+      // Create download link
+      const link = document.createElement('a')
+      link.href = qrDataURL
+      link.download = `qr-code-${selectedUrl.id}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      toast.success('QR code downloaded as PNG!')
+    } catch (error) {
+      console.error('Error generating QR code:', error)
+      toast.error('Failed to generate QR code')
+    }
   }
 
   // Clear all data
@@ -326,6 +356,22 @@ export default function URLShortener({ className = '' }: URLShortenerProps) {
               </div>
             </div>
             
+            {/* QR Code Preview */}
+            {selectedUrl?.qrCode && (
+              <div className="flex justify-center mb-4">
+                <div className="bg-white p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <img 
+                    src={selectedUrl.qrCode} 
+                    alt="QR Code" 
+                    className="w-32 h-32"
+                  />
+                  <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
+                    QR Code for your shortened URL
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-wrap justify-center gap-2">
               <button
                 onClick={() => copyToClipboard(shortenedUrl)}
@@ -339,7 +385,7 @@ export default function URLShortener({ className = '' }: URLShortenerProps) {
                 className="btn-secondary flex items-center"
               >
                 <QrCode className="w-4 h-4 mr-2" />
-                QR Code
+                Download QR
               </button>
               <button
                 onClick={() => setShowAnalytics(true)}
