@@ -23,7 +23,24 @@ import {
   Image,
   ImageOff,
   MousePointer2,
-  Speaker
+  Speaker,
+  BookOpen,
+  Mic,
+  Scroll,
+  Pin,
+  Sun,
+  Moon,
+  Zap,
+  Maximize,
+  Minimize,
+  Hand,
+  Clock,
+  Shield,
+  Brain,
+  Palette,
+  Volume1,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 
 interface AccessibilitySettings {
@@ -38,13 +55,31 @@ interface AccessibilitySettings {
   textSpacing: 'normal' | 'wide' | 'extra-wide'
   lineHeight: 'normal' | 'wide' | 'extra-wide'
   
-  // Others
+  // Visual Accessibility
   hideImages: boolean
   bigCursor: boolean
   screenReader: boolean
   reducedMotion: boolean
   focusIndicators: boolean
   soundEffects: boolean
+  
+  // Additional Accessibility Features
+  dyslexiaFriendly: boolean
+  colorBlindSupport: boolean
+  readingGuide: boolean
+  textToSpeech: boolean
+  autoScroll: boolean
+  stickyHeaders: boolean
+  readingMode: boolean
+  darkMode: boolean
+  highContrastText: boolean
+  largeButtons: boolean
+  simplifiedLayout: boolean
+  voiceCommands: boolean
+  gestureNavigation: boolean
+  timeOutWarning: boolean
+  errorPrevention: boolean
+  cognitiveLoad: boolean
 }
 
 export default function AccessibilityPanel() {
@@ -61,13 +96,31 @@ export default function AccessibilityPanel() {
     textSpacing: 'normal',
     lineHeight: 'normal',
     
-    // Others
+    // Visual Accessibility
     hideImages: false,
     bigCursor: false,
     screenReader: false,
     reducedMotion: false,
     focusIndicators: true,
-    soundEffects: false
+    soundEffects: false,
+    
+    // Additional Accessibility Features
+    dyslexiaFriendly: false,
+    colorBlindSupport: false,
+    readingGuide: false,
+    textToSpeech: false,
+    autoScroll: false,
+    stickyHeaders: false,
+    readingMode: false,
+    darkMode: false,
+    highContrastText: false,
+    largeButtons: false,
+    simplifiedLayout: false,
+    voiceCommands: false,
+    gestureNavigation: false,
+    timeOutWarning: false,
+    errorPrevention: false,
+    cognitiveLoad: false
   })
 
   // Load settings from localStorage
@@ -168,6 +221,97 @@ export default function AccessibilityPanel() {
       root.classList.add('enhanced-focus')
     } else {
       root.classList.remove('enhanced-focus')
+    }
+
+    // Additional accessibility features
+    if (newSettings.dyslexiaFriendly) {
+      root.classList.add('dyslexia-friendly')
+    } else {
+      root.classList.remove('dyslexia-friendly')
+    }
+
+    if (newSettings.colorBlindSupport) {
+      root.classList.add('colorblind-support')
+    } else {
+      root.classList.remove('colorblind-support')
+    }
+
+    if (newSettings.readingGuide) {
+      root.classList.add('reading-guide')
+    } else {
+      root.classList.remove('reading-guide')
+    }
+
+    if (newSettings.autoScroll) {
+      root.classList.add('auto-scroll')
+    } else {
+      root.classList.remove('auto-scroll')
+    }
+
+    if (newSettings.stickyHeaders) {
+      root.classList.add('sticky-headers')
+    } else {
+      root.classList.remove('sticky-headers')
+    }
+
+    if (newSettings.readingMode) {
+      root.classList.add('reading-mode')
+    } else {
+      root.classList.remove('reading-mode')
+    }
+
+    if (newSettings.darkMode) {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+
+    if (newSettings.highContrastText) {
+      root.classList.add('high-contrast-text')
+    } else {
+      root.classList.remove('high-contrast-text')
+    }
+
+    if (newSettings.largeButtons) {
+      root.classList.add('large-buttons')
+    } else {
+      root.classList.remove('large-buttons')
+    }
+
+    if (newSettings.simplifiedLayout) {
+      root.classList.add('simplified-layout')
+    } else {
+      root.classList.remove('simplified-layout')
+    }
+
+    if (newSettings.voiceCommands) {
+      root.classList.add('voice-commands')
+    } else {
+      root.classList.remove('voice-commands')
+    }
+
+    if (newSettings.gestureNavigation) {
+      root.classList.add('gesture-navigation')
+    } else {
+      root.classList.remove('gesture-navigation')
+    }
+
+    if (newSettings.timeOutWarning) {
+      root.classList.add('timeout-warning')
+    } else {
+      root.classList.remove('timeout-warning')
+    }
+
+    if (newSettings.errorPrevention) {
+      root.classList.add('error-prevention')
+    } else {
+      root.classList.remove('error-prevention')
+    }
+
+    if (newSettings.cognitiveLoad) {
+      root.classList.add('cognitive-load')
+    } else {
+      root.classList.remove('cognitive-load')
     }
   }
 
@@ -325,7 +469,23 @@ export default function AccessibilityPanel() {
                           screenReader: false,
                           reducedMotion: false,
                           focusIndicators: true,
-                          soundEffects: false
+                          soundEffects: false,
+                          dyslexiaFriendly: false,
+                          colorBlindSupport: false,
+                          readingGuide: false,
+                          textToSpeech: false,
+                          autoScroll: false,
+                          stickyHeaders: false,
+                          readingMode: false,
+                          darkMode: false,
+                          highContrastText: false,
+                          largeButtons: false,
+                          simplifiedLayout: false,
+                          voiceCommands: false,
+                          gestureNavigation: false,
+                          timeOutWarning: false,
+                          errorPrevention: false,
+                          cognitiveLoad: false
                         })
                         announceToScreenReader('All accessibility settings reset')
                         playSound('click')
@@ -606,6 +766,315 @@ export default function AccessibilityPanel() {
                       >
                         <Speaker className="w-6 h-6 mb-2" />
                         <span className="text-xs font-medium">Screen Reader</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Keyboard Shortcuts Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Keyboard className="w-5 h-5 mr-2 text-primary-600" />
+                      Keyboard Shortcuts
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">Navigation</div>
+                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Tab</kbd> Navigate elements</div>
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Shift+Tab</kbd> Navigate backwards</div>
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Enter</kbd> Activate button</div>
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Space</kbd> Toggle checkbox</div>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">App Functions</div>
+                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Ctrl+U</kbd> Upload image</div>
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Ctrl+Shift+C</kbd> Copy text</div>
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Ctrl+D</kbd> Download text</div>
+                          <div><kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs">Ctrl+S</kbd> Screenshot</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Advanced Accessibility Features */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Settings className="w-5 h-5 mr-2 text-primary-600" />
+                      Advanced Features
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {/* Dyslexia Friendly */}
+                      <button
+                        onClick={() => {
+                          updateSetting('dyslexiaFriendly', !settings.dyslexiaFriendly)
+                          announceToScreenReader(`Dyslexia friendly mode ${!settings.dyslexiaFriendly ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.dyslexiaFriendly
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <BookOpen className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Dyslexia Friendly</span>
+                      </button>
+
+                      {/* Color Blind Support */}
+                      <button
+                        onClick={() => {
+                          updateSetting('colorBlindSupport', !settings.colorBlindSupport)
+                          announceToScreenReader(`Color blind support ${!settings.colorBlindSupport ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.colorBlindSupport
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Palette className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Color Blind Support</span>
+                      </button>
+
+                      {/* Reading Guide */}
+                      <button
+                        onClick={() => {
+                          updateSetting('readingGuide', !settings.readingGuide)
+                          announceToScreenReader(`Reading guide ${!settings.readingGuide ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.readingGuide
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Eye className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Reading Guide</span>
+                      </button>
+
+                      {/* Text to Speech */}
+                      <button
+                        onClick={() => {
+                          updateSetting('textToSpeech', !settings.textToSpeech)
+                          announceToScreenReader(`Text to speech ${!settings.textToSpeech ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.textToSpeech
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Volume1 className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Text to Speech</span>
+                      </button>
+
+                      {/* Auto Scroll */}
+                      <button
+                        onClick={() => {
+                          updateSetting('autoScroll', !settings.autoScroll)
+                          announceToScreenReader(`Auto scroll ${!settings.autoScroll ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.autoScroll
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Scroll className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Auto Scroll</span>
+                      </button>
+
+                      {/* Sticky Headers */}
+                      <button
+                        onClick={() => {
+                          updateSetting('stickyHeaders', !settings.stickyHeaders)
+                          announceToScreenReader(`Sticky headers ${!settings.stickyHeaders ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.stickyHeaders
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Pin className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Sticky Headers</span>
+                      </button>
+
+                      {/* Reading Mode */}
+                      <button
+                        onClick={() => {
+                          updateSetting('readingMode', !settings.readingMode)
+                          announceToScreenReader(`Reading mode ${!settings.readingMode ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.readingMode
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <BookOpen className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Reading Mode</span>
+                      </button>
+
+                      {/* Dark Mode */}
+                      <button
+                        onClick={() => {
+                          updateSetting('darkMode', !settings.darkMode)
+                          announceToScreenReader(`Dark mode ${!settings.darkMode ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.darkMode
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Moon className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Dark Mode</span>
+                      </button>
+
+                      {/* High Contrast Text */}
+                      <button
+                        onClick={() => {
+                          updateSetting('highContrastText', !settings.highContrastText)
+                          announceToScreenReader(`High contrast text ${!settings.highContrastText ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.highContrastText
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Zap className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">High Contrast Text</span>
+                      </button>
+
+                      {/* Large Buttons */}
+                      <button
+                        onClick={() => {
+                          updateSetting('largeButtons', !settings.largeButtons)
+                          announceToScreenReader(`Large buttons ${!settings.largeButtons ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.largeButtons
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Maximize className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Large Buttons</span>
+                      </button>
+
+                      {/* Simplified Layout */}
+                      <button
+                        onClick={() => {
+                          updateSetting('simplifiedLayout', !settings.simplifiedLayout)
+                          announceToScreenReader(`Simplified layout ${!settings.simplifiedLayout ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.simplifiedLayout
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Minimize className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Simplified Layout</span>
+                      </button>
+
+                      {/* Voice Commands */}
+                      <button
+                        onClick={() => {
+                          updateSetting('voiceCommands', !settings.voiceCommands)
+                          announceToScreenReader(`Voice commands ${!settings.voiceCommands ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.voiceCommands
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Mic className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Voice Commands</span>
+                      </button>
+
+                      {/* Gesture Navigation */}
+                      <button
+                        onClick={() => {
+                          updateSetting('gestureNavigation', !settings.gestureNavigation)
+                          announceToScreenReader(`Gesture navigation ${!settings.gestureNavigation ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.gestureNavigation
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Hand className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Gesture Navigation</span>
+                      </button>
+
+                      {/* Timeout Warning */}
+                      <button
+                        onClick={() => {
+                          updateSetting('timeOutWarning', !settings.timeOutWarning)
+                          announceToScreenReader(`Timeout warning ${!settings.timeOutWarning ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.timeOutWarning
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Clock className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Timeout Warning</span>
+                      </button>
+
+                      {/* Error Prevention */}
+                      <button
+                        onClick={() => {
+                          updateSetting('errorPrevention', !settings.errorPrevention)
+                          announceToScreenReader(`Error prevention ${!settings.errorPrevention ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.errorPrevention
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Shield className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Error Prevention</span>
+                      </button>
+
+                      {/* Cognitive Load */}
+                      <button
+                        onClick={() => {
+                          updateSetting('cognitiveLoad', !settings.cognitiveLoad)
+                          announceToScreenReader(`Cognitive load reduction ${!settings.cognitiveLoad ? 'enabled' : 'disabled'}`)
+                          playSound('click')
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center ${
+                          settings.cognitiveLoad
+                            ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Brain className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-medium">Cognitive Load</span>
                       </button>
                     </div>
                   </div>
