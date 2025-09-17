@@ -115,44 +115,53 @@
     transition-duration: 0.01ms !important;
   }
   
-  .accessibility-no-focus *:focus {
-    outline: none !important;
+  .accessibility-contrast-high {
+    filter: contrast(1.5) !important;
   }
   
-  .accessibility-dyslexia-friendly {
-    font-family: 'OpenDyslexic', 'Comic Sans MS', cursive !important;
+  .accessibility-invert-colors {
+    filter: invert(1) !important;
   }
   
-  .accessibility-large-buttons button {
-    min-height: 48px !important;
-    min-width: 48px !important;
-    padding: 12px 24px !important;
+  .accessibility-font-small {
+    font-size: 14px !important;
   }
   
-  .accessibility-simplified-layout .card {
-    border: 2px solid #000 !important;
-    background: #fff !important;
+  .accessibility-font-large {
+    font-size: 18px !important;
   }
   
-  .accessibility-high-contrast-text {
-    color: #000 !important;
-    background: #fff !important;
+  /* Responsive accessibility panel */
+  @media (max-width: 640px) {
+    .accessibility-panel {
+      margin: 1rem !important;
+      max-width: calc(100vw - 2rem) !important;
+    }
+    
+    .accessibility-button {
+      min-height: 70px !important;
+      padding: 0.75rem !important;
+    }
+    
+    .accessibility-button span {
+      font-size: 0.75rem !important;
+    }
   }
   
-  .accessibility-reading-mode {
-    max-width: 65ch !important;
-    margin: 0 auto !important;
-    line-height: 1.6 !important;
-  }
-  
-  .accessibility-sticky-headers h1,
-  .accessibility-sticky-headers h2,
-  .accessibility-sticky-headers h3 {
-    position: sticky !important;
-    top: 0 !important;
-    background: #fff !important;
-    z-index: 10 !important;
-    padding: 1rem 0 !important;
+  @media (max-width: 480px) {
+    .accessibility-panel {
+      margin: 0.5rem !important;
+      max-width: calc(100vw - 1rem) !important;
+    }
+    
+    .accessibility-button {
+      min-height: 60px !important;
+      padding: 0.5rem !important;
+    }
+    
+    .accessibility-button span {
+      font-size: 0.7rem !important;
+    }
   }
 }
 
