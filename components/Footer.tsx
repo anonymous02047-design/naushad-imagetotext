@@ -22,6 +22,7 @@ export default function Footer() {
     ],
     company: [
       { name: 'About Us', href: '/about' },
+      { name: 'Accessibility', href: '/about#accessibility' },
       { name: 'Contact', href: '/contact' },
       { name: 'Privacy Policy', href: '/privacy' },
       { name: 'Terms of Service', href: '/terms' }
