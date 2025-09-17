@@ -71,7 +71,7 @@ export default function BatchProcessor() {
             const { data: { text } } = await worker.recognize(file.file)
             extractedText = text
           } else if (file.type === 'pdf') {
-            // Process PDF with PDF.js
+            // Process PDF with PDF.js + OCR fallback
             const pdfjsLib = await import('pdfjs-dist')
             
             // Set worker source with fallback
@@ -95,7 +95,9 @@ export default function BatchProcessor() {
               
               console.log(`PDF loaded: ${pdf.numPages} pages`)
               const allText: string[] = []
+              let hasTextContent = false
               
+              // First try to extract text directly
               for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 try {
                   const page = await pdf.getPage(pageNum)
@@ -110,13 +112,54 @@ export default function BatchProcessor() {
                   
                   if (pageText.trim().length > 0) {
                     allText.push(`Page ${pageNum}:\n${pageText}`)
+                    hasTextContent = true
                     console.log(`Page ${pageNum} extracted text length:`, pageText.length)
-                  } else {
-                    console.log(`Page ${pageNum} has no extractable text`)
                   }
                 } catch (pageError) {
                   console.error(`Error processing page ${pageNum}:`, pageError)
-                  allText.push(`Page ${pageNum}: Error extracting text`)
+                }
+              }
+              
+              // If no text content found, use OCR on PDF pages
+              if (!hasTextContent) {
+                console.log(`No text content found, using OCR for PDF: ${file.file.name}`)
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                  try {
+                    const page = await pdf.getPage(pageNum)
+                    const viewport = page.getViewport({ scale: 2.0 })
+                    
+                    // Create canvas to render PDF page as image
+                    const canvas = document.createElement('canvas')
+                    const context = canvas.getContext('2d')
+                    canvas.height = viewport.height
+                    canvas.width = viewport.width
+                    
+                    // Render PDF page to canvas
+                    await page.render({
+                      canvasContext: context!,
+                      viewport: viewport
+                    }).promise
+                    
+                    // Convert canvas to blob and process with Tesseract
+                    const blob = await new Promise<Blob>((resolve) => {
+                      canvas.toBlob((blob) => resolve(blob!), 'image/png')
+                    })
+                    
+                    // Create a temporary file for OCR processing
+                    const tempFile = new File([blob], `page_${pageNum}.png`, { type: 'image/png' })
+                    
+                    // Use Tesseract to extract text from the rendered page
+                    const { data: { text } } = await worker.recognize(tempFile)
+                    
+                    if (text.trim().length > 0) {
+                      allText.push(`Page ${pageNum} (OCR):\n${text}`)
+                      console.log(`Page ${pageNum} OCR text length:`, text.length)
+                    }
+                  } catch (ocrError) {
+                    console.error(`Error with OCR on page ${pageNum}:`, ocrError)
+                    allText.push(`Page ${pageNum}: OCR processing failed`)
+                  }
                 }
               }
               
@@ -124,7 +167,7 @@ export default function BatchProcessor() {
                 extractedText = allText.join('\n\n')
                 console.log(`Total extracted text length:`, extractedText.length)
               } else {
-                extractedText = `No text content found in PDF "${file.file.name}". This might be an image-based PDF that requires OCR processing.`
+                extractedText = `No text content found in PDF "${file.file.name}" even with OCR processing.`
                 console.log(`No text found in PDF: ${file.file.name}`)
               }
               

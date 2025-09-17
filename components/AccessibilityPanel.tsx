@@ -11,7 +11,6 @@ import {
   Eye,
   MousePointer2,
   Settings,
-  Square,
   Triangle,
   Link,
   Palette,
@@ -224,6 +223,7 @@ export default function AccessibilityPanel() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen])
 
+  // Define all 46 accessibility options
   const accessibilityOptions = [
     { key: 'contrast', label: 'High Contrast', icon: Contrast, type: 'select', options: ['normal', 'high', 'extra-high'] },
     { key: 'highlightLinks', label: 'Highlight Links', icon: Link, type: 'toggle' },
@@ -325,46 +325,59 @@ export default function AccessibilityPanel() {
               </div>
 
               <div className="p-4 overflow-y-auto h-[calc(100vh-140px)]">
-                <div className="mb-4 p-2 bg-blue-50 rounded-lg">
-                  <p className="text-xs text-blue-700">
-                    <strong>{accessibilityOptions.length} Accessibility Options</strong> - Scroll to see all options
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800 font-medium">
+                    {accessibilityOptions.length} Accessibility Options
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Scroll down to see all options. Click toggles to enable/disable features.
                   </p>
                 </div>
-                <div className="space-y-2">
+                
+                <div className="space-y-1">
                   {accessibilityOptions.map((option, index) => (
-                    <div key={option.key} className={`flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors ${
-                      option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings] 
-                        ? 'bg-blue-50 border border-blue-200' 
-                        : ''
-                    }`}>
-                      <div className="flex items-center space-x-2 flex-1">
+                    <div 
+                      key={option.key} 
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+                        option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings] 
+                          ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                          : 'bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 flex-1">
                         <option.icon className={`w-4 h-4 ${
                           option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings]
                             ? 'text-blue-600'
                             : 'text-gray-600'
                         }`} />
-                        <span className={`text-sm font-medium ${
-                          option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings]
-                            ? 'text-blue-700'
-                            : 'text-gray-700'
-                        }`}>{option.label}</span>
-                        {option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings] && (
-                          <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">ON</span>
-                        )}
+                        <div className="flex-1">
+                          <span className={`text-sm font-medium ${
+                            option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings]
+                              ? 'text-blue-700'
+                              : 'text-gray-700'
+                          }`}>
+                            {option.label}
+                          </span>
+                          {option.type === 'toggle' && settings[option.key as keyof AccessibilitySettings] && (
+                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                              ON
+                            </span>
+                          )}
+                        </div>
                       </div>
                       
                       {option.type === 'toggle' ? (
                         <button
                           onClick={() => updateSetting(option.key as keyof AccessibilitySettings, !settings[option.key as keyof AccessibilitySettings])}
-                          className={`w-8 h-4 rounded-full transition-colors ${
+                          className={`w-10 h-5 rounded-full transition-colors ${
                             settings[option.key as keyof AccessibilitySettings] 
                               ? 'bg-blue-500' 
                               : 'bg-gray-300'
                           }`}
                         >
-                          <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
+                          <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
                             settings[option.key as keyof AccessibilitySettings] 
-                              ? 'transform translate-x-4' 
+                              ? 'transform translate-x-5' 
                               : 'transform translate-x-0.5'
                           }`} />
                         </button>
@@ -372,7 +385,7 @@ export default function AccessibilityPanel() {
                         <select
                           value={settings[option.key as keyof AccessibilitySettings] as string}
                           onChange={(e) => updateSetting(option.key as keyof AccessibilitySettings, e.target.value)}
-                          className="text-xs border border-gray-300 rounded px-2 py-1"
+                          className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
                         >
                           {option.options?.map((opt) => (
                             <option key={opt} value={opt}>
@@ -398,7 +411,7 @@ export default function AccessibilityPanel() {
                     onClick={resetSettings}
                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
                   >
-                    Reset
+                    Reset All
                   </button>
                 </div>
               </div>
