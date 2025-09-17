@@ -74,7 +74,7 @@ export default function URLShortener({ className = '' }: URLShortenerProps) {
   const generateShortUrl = (url: string, alias?: string): string => {
     const baseUrl = window.location.origin
     const shortId = alias || Math.random().toString(36).substring(2, 8)
-    return `${baseUrl}/s/${shortId}`
+    return `${baseUrl}/redirect?id=${shortId}`
   }
 
   // Validate URL

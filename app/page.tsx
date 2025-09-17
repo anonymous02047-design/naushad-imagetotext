@@ -13,6 +13,10 @@ import TextAnalyzer from '@/components/TextAnalyzer'
 import ExportManager from '@/components/ExportManager'
 import QRCodeGenerator from '@/components/QRCodeGenerator' // Added QRCodeGenerator
 import URLShortener from '@/components/URLShortener' // Added URLShortener
+import ImageToPDF from '@/components/ImageToPDF'
+import PDFToImage from '@/components/PDFToImage'
+import ImageCompressor from '@/components/ImageCompressor'
+import PDFCompressor from '@/components/PDFCompressor'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { motion } from 'framer-motion'
@@ -35,7 +39,7 @@ export default function Home() {
     enableDeskew: true,
     enableDenoise: false
   })
-  const [activeTab, setActiveTab] = useState<'single' | 'batch' | 'pdf' | 'qr' | 'url'>('single')
+  const [activeTab, setActiveTab] = useState<'single' | 'batch' | 'pdf' | 'qr' | 'url' | 'img2pdf' | 'pdf2img' | 'compress-img' | 'compress-pdf'>('single')
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file)
@@ -280,6 +284,46 @@ export default function Home() {
                         >
                           URL Shortener
                         </button>
+                        <button
+                          onClick={() => setActiveTab('img2pdf')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'img2pdf'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          Image to PDF
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('pdf2img')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'pdf2img'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          PDF to Image
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('compress-img')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'compress-img'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          Compress Image
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('compress-pdf')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'compress-pdf'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          Compress PDF
+                        </button>
                       </div>
                     </div>
                     
@@ -402,6 +446,42 @@ export default function Home() {
               className="max-w-4xl mx-auto"
             >
               <QRCodeGenerator />
+            </motion.div>
+          ) : activeTab === 'img2pdf' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-4xl mx-auto"
+            >
+              <ImageToPDF />
+            </motion.div>
+          ) : activeTab === 'pdf2img' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-4xl mx-auto"
+            >
+              <PDFToImage />
+            </motion.div>
+          ) : activeTab === 'compress-img' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-4xl mx-auto"
+            >
+              <ImageCompressor />
+            </motion.div>
+          ) : activeTab === 'compress-pdf' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-4xl mx-auto"
+            >
+              <PDFCompressor />
             </motion.div>
           ) : (
             <motion.div
