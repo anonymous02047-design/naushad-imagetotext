@@ -17,6 +17,7 @@ import ImageToPDF from '@/components/ImageToPDF'
 import PDFToImage from '@/components/PDFToImage'
 import ImageCompressor from '@/components/ImageCompressor'
 import PDFCompressor from '@/components/PDFCompressor'
+import ServicesGrid from '@/components/ServicesGrid'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { motion } from 'framer-motion'
@@ -39,7 +40,7 @@ export default function Home() {
     enableDeskew: true,
     enableDenoise: false
   })
-  const [activeTab, setActiveTab] = useState<'single' | 'batch' | 'pdf' | 'qr' | 'url' | 'img2pdf' | 'pdf2img' | 'compress-img' | 'compress-pdf'>('single')
+  const [activeTab, setActiveTab] = useState<'grid' | 'single' | 'batch' | 'pdf' | 'qr' | 'url' | 'img2pdf' | 'pdf2img' | 'compress-img' | 'compress-pdf'>('grid')
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file)
@@ -80,6 +81,10 @@ export default function Home() {
       enableDenoise: false
     })
     toast.success('All data cleared successfully!')
+  }
+
+  const handleServiceSelect = (serviceId: string) => {
+    setActiveTab(serviceId as any)
   }
 
   // Keyboard shortcuts
@@ -235,6 +240,16 @@ export default function Home() {
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-200 dark:border-gray-700 w-full sm:w-auto overflow-x-auto">
                       <div className="flex space-x-1 min-w-max sm:min-w-0">
                         <button
+                          onClick={() => setActiveTab('grid')}
+                          className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                            activeTab === 'grid'
+                              ? 'bg-primary-600 text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          All Services
+                        </button>
+                        <button
                           onClick={() => setActiveTab('single')}
                           className={`px-3 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
                             activeTab === 'single'
@@ -346,7 +361,19 @@ export default function Home() {
                   </motion.div>
 
           {/* Main Content */}
-          {activeTab === 'single' ? (
+          {activeTab === 'grid' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="max-w-7xl mx-auto"
+            >
+              <ServicesGrid 
+                onServiceSelect={handleServiceSelect}
+                activeService={activeTab}
+              />
+            </motion.div>
+          ) : activeTab === 'single' ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {/* Left Column - Image Upload and Preview */}
               <motion.div
