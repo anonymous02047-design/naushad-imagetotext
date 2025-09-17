@@ -32,8 +32,8 @@ export default function PDFCompressor({ className }: PDFCompressorProps) {
   const [pdfs, setPdfs] = useState<CompressedPDF[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [settings, setSettings] = useState({
-    quality: 0.8,
-    imageQuality: 0.7,
+    quality: 0.9,
+    imageQuality: 0.85,
     removeMetadata: true,
     optimizeImages: true
   })
@@ -82,22 +82,35 @@ export default function PDFCompressor({ className }: PDFCompressorProps) {
       const arrayBuffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
       
-      // Create a new PDF document
+      // Create a new PDF document with better settings
       const { jsPDF } = await import('jspdf')
-      const compressedPdf = new jsPDF()
+      const compressedPdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      })
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum)
-        const viewport = page.getViewport({ scale: 1.0 })
+        
+        // Use higher scale for better quality
+        const scale = Math.min(2.0, settings.quality * 2) // Scale based on quality setting
+        const viewport = page.getViewport({ scale })
         
         const canvas = document.createElement('canvas')
         const context = canvas.getContext('2d')!
         canvas.height = viewport.height
         canvas.width = viewport.width
 
+        // Enable text rendering optimizations
+        context.imageSmoothingEnabled = true
+        context.imageSmoothingQuality = 'high'
+
         await page.render({
           canvasContext: context,
-          viewport: viewport
+          viewport: viewport,
+          intent: 'display'
         }).promise
 
         // Add new page for each page (except the first one)
@@ -125,15 +138,21 @@ export default function PDFCompressor({ className }: PDFCompressorProps) {
         const x = (pageWidth - imgWidth) / 2
         const y = (pageHeight - imgHeight) / 2
 
-        // Convert canvas to data URL with compression
-        const imgData = canvas.toDataURL('image/jpeg', settings.imageQuality)
+        // Use PNG for better text quality, JPEG only for very low quality settings
+        const usePNG = settings.imageQuality > 0.7
+        const format = usePNG ? 'image/png' : 'image/jpeg'
+        const quality = usePNG ? 1.0 : settings.imageQuality
         
-        // Add image to PDF
-        compressedPdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight)
+        // Convert canvas to data URL with better quality settings
+        const imgData = canvas.toDataURL(format, quality)
+        
+        // Add image to PDF with better compression
+        compressedPdf.addImage(imgData, format.split('/')[1].toUpperCase(), x, y, imgWidth, imgHeight, undefined, 'FAST')
       }
 
-      // Generate compressed PDF
+      // Generate compressed PDF with better settings
       const compressedPdfBlob = compressedPdf.output('blob')
+      
       const compressedFile = new File([compressedPdfBlob], file.name.replace('.pdf', '_compressed.pdf'), {
         type: 'application/pdf'
       })
@@ -238,6 +257,47 @@ export default function PDFCompressor({ className }: PDFCompressorProps) {
           />
         </div>
 
+        {/* Quality Presets */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Quality Presets
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.95, imageQuality: 0.9 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality >= 0.95 ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              High Quality
+            </button>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.85, imageQuality: 0.8 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality >= 0.8 && settings.quality < 0.95 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Balanced
+            </button>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.7, imageQuality: 0.6 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality >= 0.6 && settings.quality < 0.8 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Compressed
+            </button>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.5, imageQuality: 0.4 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality < 0.6 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Maximum Compression
+            </button>
+          </div>
+        </div>
+
         {/* Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -248,7 +308,7 @@ export default function PDFCompressor({ className }: PDFCompressorProps) {
               type="range"
               min="0.1"
               max="1"
-              step="0.1"
+              step="0.05"
               value={settings.quality}
               onChange={(e) => setSettings(prev => ({ ...prev, quality: Number(e.target.value) }))}
               className="w-full"
@@ -263,7 +323,7 @@ export default function PDFCompressor({ className }: PDFCompressorProps) {
               type="range"
               min="0.1"
               max="1"
-              step="0.1"
+              step="0.05"
               value={settings.imageQuality}
               onChange={(e) => setSettings(prev => ({ ...prev, imageQuality: Number(e.target.value) }))}
               className="w-full"

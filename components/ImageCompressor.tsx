@@ -32,7 +32,7 @@ export default function ImageCompressor({ className }: ImageCompressorProps) {
   const [images, setImages] = useState<CompressedImage[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [settings, setSettings] = useState({
-    quality: 0.8,
+    quality: 0.85,
     maxWidth: 1920,
     maxHeight: 1080,
     format: 'jpeg'
@@ -80,8 +80,10 @@ export default function ImageCompressor({ className }: ImageCompressorProps) {
       const img = new Image()
 
       img.onload = () => {
-        // Calculate new dimensions
+        // Calculate new dimensions with better scaling
         let { width, height } = img
+        const originalWidth = width
+        const originalHeight = height
         
         if (width > settings.maxWidth || height > settings.maxHeight) {
           const aspectRatio = width / height
@@ -95,14 +97,33 @@ export default function ImageCompressor({ className }: ImageCompressorProps) {
           }
         }
 
-        canvas.width = width
-        canvas.height = height
+        // Use higher resolution for better quality
+        const scale = Math.min(2, Math.max(1, settings.quality * 2))
+        canvas.width = width * scale
+        canvas.height = height * scale
 
-        // Draw and compress
-        ctx.drawImage(img, 0, 0, width, height)
+        // Enable better image rendering
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
+
+        // Draw with better quality
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
         
+        // Scale back down for final output
+        const finalCanvas = document.createElement('canvas')
+        const finalCtx = finalCanvas.getContext('2d')!
+        finalCanvas.width = width
+        finalCanvas.height = height
+        
+        finalCtx.imageSmoothingEnabled = true
+        finalCtx.imageSmoothingQuality = 'high'
+        finalCtx.drawImage(canvas, 0, 0, width, height)
+        
+        // Choose format based on content and quality
         const outputFormat = settings.format === 'jpeg' ? 'image/jpeg' : 'image/png'
-        const dataUrl = canvas.toDataURL(outputFormat, settings.quality)
+        const finalQuality = Math.max(0.7, settings.quality) // Ensure minimum quality
+        
+        const dataUrl = finalCanvas.toDataURL(outputFormat, finalQuality)
         
         // Convert data URL to blob
         const byteString = atob(dataUrl.split(',')[1])
@@ -222,6 +243,47 @@ export default function ImageCompressor({ className }: ImageCompressorProps) {
           />
         </div>
 
+        {/* Quality Presets */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Quality Presets
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.95 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality >= 0.95 ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              High Quality
+            </button>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.85 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality >= 0.8 && settings.quality < 0.95 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Balanced
+            </button>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.7 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality >= 0.6 && settings.quality < 0.8 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Compressed
+            </button>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, quality: 0.5 }))}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                settings.quality < 0.6 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Maximum Compression
+            </button>
+          </div>
+        </div>
+
         {/* Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -232,7 +294,7 @@ export default function ImageCompressor({ className }: ImageCompressorProps) {
               type="range"
               min="0.1"
               max="1"
-              step="0.1"
+              step="0.05"
               value={settings.quality}
               onChange={(e) => setSettings(prev => ({ ...prev, quality: Number(e.target.value) }))}
               className="w-full"
