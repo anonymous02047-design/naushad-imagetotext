@@ -13,7 +13,8 @@ import {
   EyeOff,
   MousePointer,
   Keyboard,
-  Settings
+  Settings,
+  Link
 } from 'lucide-react'
 
 interface AccessibilitySettings {
@@ -24,6 +25,7 @@ interface AccessibilitySettings {
   keyboardNavigation: boolean
   focusIndicators: boolean
   soundEffects: boolean
+  highlightLinks: boolean
 }
 
 export default function AccessibilityPanel() {
@@ -35,7 +37,8 @@ export default function AccessibilityPanel() {
     screenReader: false,
     keyboardNavigation: true,
     focusIndicators: true,
-    soundEffects: false
+    soundEffects: false,
+    highlightLinks: false
   })
 
   // Load settings from localStorage
@@ -62,7 +65,9 @@ export default function AccessibilityPanel() {
       'large': '18px',
       'extra-large': '20px'
     }
-    document.body.style.fontSize = fontSizeMap[newSettings.fontSize]
+    
+    // Apply font size with important to override other styles
+    document.body.style.setProperty('font-size', fontSizeMap[newSettings.fontSize], 'important')
 
     // Contrast - remove all contrast classes first, then add the selected one
     root.classList.remove('high-contrast', 'extra-high-contrast')
@@ -84,6 +89,13 @@ export default function AccessibilityPanel() {
       root.classList.add('enhanced-focus')
     } else {
       root.classList.remove('enhanced-focus')
+    }
+
+    // Link highlighting
+    if (newSettings.highlightLinks) {
+      root.classList.add('highlight-links')
+    } else {
+      root.classList.remove('highlight-links')
     }
 
     // Screen reader announcements - don't set on root, handle in component
@@ -197,13 +209,13 @@ export default function AccessibilityPanel() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] overflow-hidden mx-4"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden mx-2 sm:mx-4"
               role="dialog"
               aria-labelledby="accessibility-title"
               aria-modal="true"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 
                   id="accessibility-title"
                   className="text-xl font-semibold text-gray-900 dark:text-white flex items-center"
@@ -225,7 +237,7 @@ export default function AccessibilityPanel() {
                 </button>
               </div>
 
-              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
+              <div className="p-3 sm:p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                 <div className="space-y-4 sm:space-y-6">
                   {/* Font Size */}
                   <div>
@@ -333,6 +345,12 @@ export default function AccessibilityPanel() {
                         label: 'Sound Effects',
                         description: 'Audio feedback for interactions',
                         icon: settings.soundEffects ? Volume2 : VolumeX
+                      },
+                      {
+                        key: 'highlightLinks' as const,
+                        label: 'Highlight Links',
+                        description: 'Add underlines and highlighting to links',
+                        icon: Link
                       }
                     ].map((option) => (
                       <div key={option.key} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
