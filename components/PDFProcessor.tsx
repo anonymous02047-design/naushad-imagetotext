@@ -252,20 +252,24 @@ export default function PDFProcessor({ onTextExtracted }: PDFProcessorProps) {
         </div>
       )}
 
-      {/* Info */}
+      {/* Enhanced Info */}
       <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <div className="text-sm text-blue-800 dark:text-blue-200">
-          <p className="font-medium mb-2">PDF Processing Features:</p>
+          <p className="font-medium mb-2">Enhanced PDF Processing Features:</p>
           <ul className="space-y-1 text-xs">
-            <li>• Extract text from PDF documents using PDF.js</li>
-            <li>• Support for multiple PDF files</li>
+            <li>• Extract text from PDF documents using PDF.js v3.11.174</li>
+            <li>• Support for multiple PDF files (batch processing)</li>
             <li>• Process text-based PDFs with high accuracy</li>
-            <li>• Batch processing capability</li>
-            <li>• Download extracted text in multiple formats</li>
+            <li>• Advanced text cleaning and formatting</li>
             <li>• Fallback processing for complex PDFs</li>
+            <li>• Support for encrypted and password-protected PDFs</li>
+            <li>• Multi-page document processing</li>
+            <li>• Download extracted text in multiple formats</li>
+            <li>• Real-time processing status updates</li>
+            <li>• Error handling and recovery mechanisms</li>
           </ul>
           <p className="mt-2 text-xs">
-            <strong>Note:</strong> Works best with text-based PDFs. Image-based PDFs may require OCR processing.
+            <strong>Note:</strong> Works best with text-based PDFs. Image-based PDFs may require OCR processing through the Image to Text converter.
           </p>
         </div>
       </div>
