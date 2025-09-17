@@ -122,6 +122,15 @@ const services: Service[] = [
     color: 'from-amber-500 to-amber-600',
     features: ['Page editing', 'Color conversion', 'Size adjustment', 'Batch processing'],
     isNew: true
+  },
+  {
+    id: 'merge-pdf',
+    title: 'PDF Merger',
+    description: 'Combine multiple PDF files into a single document with drag-and-drop interface.',
+    icon: FileText,
+    color: 'from-violet-500 to-violet-600',
+    features: ['Drag & drop', 'Order control', 'Page preview', 'Batch merge'],
+    isNew: true
   }
 ]
 
