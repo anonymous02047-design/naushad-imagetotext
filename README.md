@@ -39,7 +39,6 @@ A modern, advanced OCR (Optical Character Recognition) web application built wit
 - **Modern UI**: Beautiful, responsive design with smooth animations
 - **Dark/Light Theme**: Toggle between light and dark modes with persistence
 - **Mobile Friendly**: Fully responsive design that works on all devices
-- **Keyboard Shortcuts**: Power user shortcuts for faster workflow
 - **Loading States**: Comprehensive loading indicators and progress bars
 - **Error Handling**: Graceful error handling with user-friendly messages
 - **Performance Optimized**: Lazy loading, memoization, and efficient rendering

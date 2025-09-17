@@ -26,7 +26,6 @@ import Footer from '@/components/Footer'
 import { motion } from 'framer-motion'
 import { Trash2, RotateCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -90,114 +89,6 @@ export default function Home() {
     setActiveTab(serviceId as any)
   }
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: 'u',
-      ctrlKey: true,
-      action: () => {
-        if (!isProcessing) {
-          const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-          fileInput?.click()
-          toast.success('File picker opened (Ctrl+U)')
-        }
-      },
-      description: 'Upload image'
-    },
-    {
-      key: 'c',
-      ctrlKey: true,
-      shiftKey: true,
-      action: () => {
-        if (extractedText) {
-          navigator.clipboard.writeText(extractedText)
-          toast.success('Text copied to clipboard (Ctrl+Shift+C)')
-        }
-      },
-      description: 'Copy text to clipboard'
-    },
-    {
-      key: 'd',
-      ctrlKey: true,
-      action: () => {
-        if (extractedText) {
-          const blob = new Blob([extractedText], { type: 'text/plain' })
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `extracted-text-${Date.now()}.txt`
-          link.click()
-          URL.revokeObjectURL(url)
-          toast.success('Text downloaded (Ctrl+D)')
-        }
-      },
-      description: 'Download text'
-    },
-    {
-      key: 's',
-      ctrlKey: true,
-      action: async () => {
-        try {
-          // Hide the keyboard shortcuts dialog if open
-          const dialog = document.querySelector('[role="dialog"]')
-          if (dialog) {
-            (dialog as HTMLElement).style.display = 'none'
-          }
-          
-          // Take screenshot using html2canvas
-          const { default: html2canvas } = await import('html2canvas')
-          const canvas = await html2canvas(document.body, {
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 1
-          })
-          
-          // Convert to blob and download
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob)
-              const link = document.createElement('a')
-              link.href = url
-              link.download = `screenshot-${Date.now()}.png`
-              link.click()
-              URL.revokeObjectURL(url)
-              toast.success('Screenshot saved (Ctrl+S)')
-            }
-          }, 'image/png')
-          
-          // Show the dialog again
-          if (dialog) {
-            (dialog as HTMLElement).style.display = 'block'
-          }
-        } catch (error) {
-          console.error('Screenshot error:', error)
-          toast.error('Failed to take screenshot')
-        }
-      },
-      description: 'Take screenshot'
-    },
-    {
-      key: 'r',
-      ctrlKey: true,
-      action: () => {
-        if (selectedImage || extractedText) {
-          clearAllData()
-        }
-      },
-      description: 'Clear all data'
-    },
-    {
-      key: 'h',
-      ctrlKey: true,
-      action: () => {
-        const helpButton = document.querySelector('[title*="Keyboard shortcuts"]') as HTMLButtonElement
-        helpButton?.click()
-        toast.success('Keyboard shortcuts opened (Ctrl+H)')
-      },
-      description: 'Show keyboard shortcuts'
-    }
-  ])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

@@ -1,10 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Github, Settings, HelpCircle, Home } from 'lucide-react'
+import { Home } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
-import KeyboardShortcuts from './KeyboardShortcuts'
-import AccessibilityPanel from './AccessibilityPanel'
 import Link from 'next/link'
 
 export default function Header() {
@@ -44,17 +42,6 @@ export default function Header() {
               <Home className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
             <ThemeToggle />
-            <AccessibilityPanel />
-            <KeyboardShortcuts />
-            <button className="p-1.5 sm:p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="Help" aria-label="Get help">
-              <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button className="p-1.5 sm:p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="Settings" aria-label="Open settings">
-              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button className="p-1.5 sm:p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors duration-200" title="GitHub" aria-label="View on GitHub">
-              <Github className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
           </motion.div>
         </div>
       </div>
