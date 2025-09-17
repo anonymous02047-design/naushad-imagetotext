@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { Home } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
-import AccessibilityPanel from './AccessibilityPanel'
 import Link from 'next/link'
 
 export default function Header() {
@@ -43,7 +42,6 @@ export default function Header() {
               <Home className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
             <ThemeToggle />
-            <AccessibilityPanel />
           </motion.div>
         </div>
       </div>

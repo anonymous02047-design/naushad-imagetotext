@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, X, CheckCircle, AlertCircle, Download, Trash2, FileText, Image } from 'lucide-react'
+import { Upload, X, CheckCircle, AlertCircle, Download, Trash2, FileText, Image, Settings, Filter, Search, Copy, Save, Clock, BarChart3, Zap } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { createWorker } from 'tesseract.js'
 import toast from 'react-hot-toast'
@@ -15,12 +15,27 @@ interface ProcessedFile {
   progress: number
   error?: string
   type: 'image' | 'pdf'
+  processingTime?: number
+  wordCount?: number
+  confidence?: number
+  processedAt?: Date
 }
 
 export default function BatchProcessor() {
   const [files, setFiles] = useState<ProcessedFile[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('eng')
+  const [showSettings, setShowSettings] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState<'all' | 'completed' | 'error' | 'pending'>('all')
+  const [processingStats, setProcessingStats] = useState({
+    totalFiles: 0,
+    completedFiles: 0,
+    errorFiles: 0,
+    totalWords: 0,
+    averageConfidence: 0,
+    totalProcessingTime: 0
+  })
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: ProcessedFile[] = acceptedFiles.map(file => ({
@@ -64,12 +79,17 @@ export default function BatchProcessor() {
         ))
 
         try {
+          const fileStartTime = Date.now()
           let extractedText = ''
+          let confidence = 0
+          let wordCount = 0
           
           if (file.type === 'image') {
             // Process image with Tesseract
-            const { data: { text } } = await worker.recognize(file.file)
+            const { data: { text, confidence: conf } } = await worker.recognize(file.file)
             extractedText = text
+            confidence = conf
+            wordCount = text.trim().split(/\s+/).filter(word => word.length > 0).length
           } else if (file.type === 'pdf') {
             // Process PDF with PDF.js + OCR fallback
             const pdfjsLib = await import('pdfjs-dist')
@@ -177,9 +197,21 @@ export default function BatchProcessor() {
             }
           }
           
+          const processingTime = Date.now() - fileStartTime
+          const finalWordCount = extractedText.trim().split(/\s+/).filter(word => word.length > 0).length
+          
           setFiles(prev => prev.map(f => 
             f.id === file.id 
-              ? { ...f, text: extractedText, status: 'completed' as const, progress: 100 }
+              ? { 
+                  ...f, 
+                  text: extractedText, 
+                  status: 'completed' as const, 
+                  progress: 100,
+                  processingTime,
+                  wordCount: finalWordCount,
+                  confidence,
+                  processedAt: new Date()
+                }
               : f
           ))
         } catch (error) {
@@ -206,7 +238,62 @@ export default function BatchProcessor() {
 
   const clearAll = () => {
     setFiles([])
+    setProcessingStats({
+      totalFiles: 0,
+      completedFiles: 0,
+      errorFiles: 0,
+      totalWords: 0,
+      averageConfidence: 0,
+      totalProcessingTime: 0
+    })
   }
+
+  const calculateStats = () => {
+    const completedFiles = files.filter(f => f.status === 'completed')
+    const errorFiles = files.filter(f => f.status === 'error')
+    const totalWords = completedFiles.reduce((sum, f) => sum + (f.wordCount || 0), 0)
+    const totalProcessingTime = completedFiles.reduce((sum, f) => sum + (f.processingTime || 0), 0)
+    const averageConfidence = completedFiles.length > 0 
+      ? completedFiles.reduce((sum, f) => sum + (f.confidence || 0), 0) / completedFiles.length 
+      : 0
+
+    setProcessingStats({
+      totalFiles: files.length,
+      completedFiles: completedFiles.length,
+      errorFiles: errorFiles.length,
+      totalWords,
+      averageConfidence,
+      totalProcessingTime
+    })
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    toast.success('Text copied to clipboard!')
+  }
+
+  const saveAsFile = (text: string, filename: string) => {
+    const blob = new Blob([text], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+    toast.success('File saved!')
+  }
+
+  const filteredFiles = files.filter(file => {
+    const matchesSearch = file.file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         file.text.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesFilter = filterStatus === 'all' || file.status === filterStatus
+    return matchesSearch && matchesFilter
+  })
+
+  // Update stats when files change
+  useEffect(() => {
+    calculateStats()
+  }, [files])
 
   const downloadAll = () => {
     const completedFiles = files.filter(file => file.status === 'completed')
@@ -243,6 +330,13 @@ export default function BatchProcessor() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Batch Processing</h2>
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {completedCount}/{files.length} completed
           </span>
@@ -253,6 +347,73 @@ export default function BatchProcessor() {
           )}
         </div>
       </div>
+
+      {/* Statistics Panel */}
+      {files.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Total Files</span>
+            </div>
+            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{processingStats.totalFiles}</p>
+          </div>
+          <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800 dark:text-green-200">Completed</span>
+            </div>
+            <p className="text-lg font-bold text-green-900 dark:text-green-100">{processingStats.completedFiles}</p>
+          </div>
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <Zap className="w-4 h-4 text-purple-600" />
+              <span className="text-sm font-medium text-purple-800 dark:text-purple-200">Total Words</span>
+            </div>
+            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{processingStats.totalWords.toLocaleString()}</p>
+          </div>
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <Clock className="w-4 h-4 text-orange-600" />
+              <span className="text-sm font-medium text-orange-800 dark:text-orange-200">Avg Time</span>
+            </div>
+            <p className="text-lg font-bold text-orange-900 dark:text-orange-100">
+              {processingStats.completedFiles > 0 ? Math.round(processingStats.totalProcessingTime / processingStats.completedFiles / 1000) : 0}s
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Search and Filter Controls */}
+      {files.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search files or text content..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+            >
+              <option value="all">All Files</option>
+              <option value="completed">Completed</option>
+              <option value="error">Errors</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Drop Zone */}
       <div
@@ -329,7 +490,7 @@ export default function BatchProcessor() {
       {/* File List */}
       <div className="space-y-2 max-h-96 overflow-y-auto">
         <AnimatePresence>
-          {files.map((file) => (
+          {filteredFiles.map((file) => (
             <motion.div
               key={file.id}
               initial={{ opacity: 0, x: -20 }}
@@ -362,9 +523,16 @@ export default function BatchProcessor() {
                       {file.type.toUpperCase()}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {(file.file.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
+                  <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                    <span>{(file.file.size / 1024 / 1024).toFixed(2)} MB</span>
+                    {file.status === 'completed' && (
+                      <>
+                        {file.wordCount && <span>{file.wordCount} words</span>}
+                        {file.confidence && <span>{Math.round(file.confidence)}% confidence</span>}
+                        {file.processingTime && <span>{Math.round(file.processingTime / 1000)}s</span>}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -382,12 +550,33 @@ export default function BatchProcessor() {
                 </div>
               )}
 
-              <button
-                onClick={() => removeFile(file.id)}
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center space-x-1">
+                {file.status === 'completed' && (
+                  <>
+                    <button
+                      onClick={() => copyToClipboard(file.text)}
+                      className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                      title="Copy text"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => saveAsFile(file.text, `${file.file.name.replace(/\.[^/.]+$/, '')}.txt`)}
+                      className="p-1 text-gray-400 hover:text-green-500 transition-colors"
+                      title="Save as file"
+                    >
+                      <Save className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => removeFile(file.id)}
+                  className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                  title="Remove file"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
