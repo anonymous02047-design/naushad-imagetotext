@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Accessibility, 
@@ -55,22 +55,21 @@ export default function AccessibilityPanel() {
   const applyAccessibilitySettings = (newSettings: AccessibilitySettings) => {
     const root = document.documentElement
     
-    // Font size
+    // Font size - apply to body instead of root to avoid conflicts
     const fontSizeMap = {
       'small': '14px',
       'medium': '16px',
       'large': '18px',
       'extra-large': '20px'
     }
-    root.style.fontSize = fontSizeMap[newSettings.fontSize]
+    document.body.style.fontSize = fontSizeMap[newSettings.fontSize]
 
-    // Contrast
+    // Contrast - remove all contrast classes first, then add the selected one
+    root.classList.remove('high-contrast', 'extra-high-contrast')
     if (newSettings.contrast === 'high') {
       root.classList.add('high-contrast')
     } else if (newSettings.contrast === 'extra-high') {
       root.classList.add('extra-high-contrast')
-    } else {
-      root.classList.remove('high-contrast', 'extra-high-contrast')
     }
 
     // Reduced motion
@@ -87,12 +86,8 @@ export default function AccessibilityPanel() {
       root.classList.remove('enhanced-focus')
     }
 
-    // Screen reader announcements
-    if (newSettings.screenReader) {
-      root.setAttribute('aria-live', 'polite')
-    } else {
-      root.removeAttribute('aria-live')
-    }
+    // Screen reader announcements - don't set on root, handle in component
+    // This prevents conflicts with other components
   }
 
   const updateSetting = <K extends keyof AccessibilitySettings>(
@@ -110,9 +105,40 @@ export default function AccessibilityPanel() {
       announcement.className = 'sr-only'
       announcement.textContent = message
       document.body.appendChild(announcement)
-      setTimeout(() => document.body.removeChild(announcement), 1000)
+      setTimeout(() => {
+        if (document.body.contains(announcement)) {
+          document.body.removeChild(announcement)
+        }
+      }, 1000)
     }
   }
+
+  // ESC key handler
+  const handleEscKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape' && isOpen) {
+      setIsOpen(false)
+      announceToScreenReader('Accessibility panel closed')
+      playSound('click')
+    }
+  }, [isOpen])
+
+  // Add/remove ESC key listener
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey)
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.removeEventListener('keydown', handleEscKey)
+      // Restore body scroll
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen, handleEscKey])
 
   const playSound = (type: 'success' | 'error' | 'click') => {
     if (settings.soundEffects) {
@@ -156,7 +182,16 @@ export default function AccessibilityPanel() {
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsOpen(false)
+                announceToScreenReader('Accessibility panel closed')
+                playSound('click')
+              }
+            }}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -166,6 +201,7 @@ export default function AccessibilityPanel() {
               role="dialog"
               aria-labelledby="accessibility-title"
               aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 
@@ -181,8 +217,9 @@ export default function AccessibilityPanel() {
                     announceToScreenReader('Accessibility panel closed')
                     playSound('click')
                   }}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   aria-label="Close accessibility panel"
+                  title="Close (ESC)"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -349,6 +386,21 @@ export default function AccessibilityPanel() {
                         <li>• WCAG 2.1 AA compliant design</li>
                       </ul>
                     </div>
+                  </div>
+
+                  {/* Close Button */}
+                  <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => {
+                        setIsOpen(false)
+                        announceToScreenReader('Accessibility panel closed')
+                        playSound('click')
+                      }}
+                      className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium"
+                      aria-label="Close accessibility panel"
+                    >
+                      Done
+                    </button>
                   </div>
                 </div>
               </div>

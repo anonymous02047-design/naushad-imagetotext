@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Keyboard, X } from 'lucide-react'
 
@@ -20,6 +20,31 @@ const SHORTCUTS_LIST = [
 export default function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false)
 
+  // ESC key handler
+  const handleEscKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape' && isOpen) {
+      setIsOpen(false)
+    }
+  }, [isOpen])
+
+  // Add/remove ESC key listener
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey)
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.removeEventListener('keydown', handleEscKey)
+      // Restore body scroll
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen, handleEscKey])
+
   return (
     <>
       <button
@@ -32,13 +57,21 @@ export default function KeyboardShortcuts() {
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsOpen(false)
+              }
+            }}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
@@ -47,7 +80,8 @@ export default function KeyboardShortcuts() {
                 </h2>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Close (ESC)"
                 >
                   <X className="w-5 h-5" />
                 </button>
