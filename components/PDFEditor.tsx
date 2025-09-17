@@ -353,11 +353,18 @@ export default function PDFEditor({ className }: PDFEditorProps) {
   }
 
   const downloadPDF = (pdf: EditedPDF) => {
+    // Create a blob from the edited file
+    const blob = new Blob([pdf.edited], { type: pdf.edited.type })
+    const url = URL.createObjectURL(blob)
+    
     const link = document.createElement('a')
-    link.href = pdf.dataUrl
+    link.href = url
     link.download = pdf.edited.name
     link.click()
-    toast.success('PDF downloaded')
+    
+    // Clean up the URL object
+    URL.revokeObjectURL(url)
+    toast.success('Edited PDF downloaded')
   }
 
   const removePDF = (index: number) => {

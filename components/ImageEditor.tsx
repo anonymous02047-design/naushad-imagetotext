@@ -106,97 +106,115 @@ export default function ImageEditor({ className }: ImageEditorProps) {
     }
   }
 
-  const processImage = (file: File): Promise<EditedImage | null> => {
+  const processImage = async (file: File): Promise<EditedImage | null> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')!
       const img = new Image()
 
-      img.onload = () => {
-        // Calculate dimensions
-        let { width, height } = img
-        
-        // Apply resize
-        if (settings.maintainAspectRatio) {
-          const aspectRatio = width / height
-          if (width > height) {
-            width = settings.width
-            height = width / aspectRatio
+      img.onload = async () => {
+        try {
+          // Calculate dimensions
+          let { width, height } = img
+          
+          // Apply resize
+          if (settings.maintainAspectRatio) {
+            const aspectRatio = width / height
+            if (width > height) {
+              width = settings.width
+              height = width / aspectRatio
+            } else {
+              height = settings.height
+              width = height * aspectRatio
+            }
           } else {
+            width = settings.width
             height = settings.height
-            width = height * aspectRatio
           }
-        } else {
-          width = settings.width
-          height = settings.height
+
+          canvas.width = width
+          canvas.height = height
+
+          // Apply transformations
+          ctx.save()
+          
+          // Apply rotation
+          if (settings.rotation !== 0) {
+            ctx.translate(width / 2, height / 2)
+            ctx.rotate((settings.rotation * Math.PI) / 180)
+            ctx.translate(-width / 2, -height / 2)
+          }
+
+          // Apply flip
+          if (settings.flipHorizontal || settings.flipVertical) {
+            ctx.scale(
+              settings.flipHorizontal ? -1 : 1,
+              settings.flipVertical ? -1 : 1
+            )
+            if (settings.flipHorizontal) ctx.translate(-width, 0)
+            if (settings.flipVertical) ctx.translate(0, -height)
+          }
+
+          // Draw image
+          ctx.drawImage(img, 0, 0, width, height)
+          ctx.restore()
+
+          // Apply filters
+          applyFilters(ctx, width, height)
+
+          // Convert to data URL for preview
+          const dataUrl = canvas.toDataURL('image/png', 1.0)
+          
+          // Convert canvas to blob for file creation
+          const editedFile = await new Promise<File>((resolveFile) => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const editedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '_edited.png'), {
+                  type: 'image/png'
+                })
+                resolveFile(editedFile)
+              } else {
+                // Fallback method
+                const byteString = atob(dataUrl.split(',')[1])
+                const ab = new ArrayBuffer(byteString.length)
+                const ia = new Uint8Array(ab)
+                
+                for (let i = 0; i < byteString.length; i++) {
+                  ia[i] = byteString.charCodeAt(i)
+                }
+                
+                const editedFile = new File([ab], file.name.replace(/\.[^/.]+$/, '_edited.png'), {
+                  type: 'image/png'
+                })
+                resolveFile(editedFile)
+              }
+            }, 'image/png', 1.0)
+          })
+
+          const operations = []
+          if (settings.width !== img.width || settings.height !== img.height) operations.push('Resize')
+          if (settings.brightness !== 100) operations.push('Brightness')
+          if (settings.contrast !== 100) operations.push('Contrast')
+          if (settings.saturation !== 100) operations.push('Saturation')
+          if (settings.hue !== 0) operations.push('Hue')
+          if (settings.blur > 0) operations.push('Blur')
+          if (settings.sharpen > 0) operations.push('Sharpen')
+          if (settings.colorMode !== 'color') operations.push('Color Mode')
+          if (settings.rotation !== 0) operations.push('Rotation')
+          if (settings.flipHorizontal || settings.flipVertical) operations.push('Flip')
+
+          resolve({
+            original: file,
+            edited: editedFile,
+            originalSize: file.size,
+            editedSize: editedFile.size,
+            dataUrl,
+            operations
+          })
+        } catch (error) {
+          console.error('Error processing image:', error)
+          resolve(null)
         }
-
-        canvas.width = width
-        canvas.height = height
-
-        // Apply transformations
-        ctx.save()
-        
-        // Apply rotation
-        if (settings.rotation !== 0) {
-          ctx.translate(width / 2, height / 2)
-          ctx.rotate((settings.rotation * Math.PI) / 180)
-          ctx.translate(-width / 2, -height / 2)
-        }
-
-        // Apply flip
-        if (settings.flipHorizontal || settings.flipVertical) {
-          ctx.scale(
-            settings.flipHorizontal ? -1 : 1,
-            settings.flipVertical ? -1 : 1
-          )
-          if (settings.flipHorizontal) ctx.translate(-width, 0)
-          if (settings.flipVertical) ctx.translate(0, -height)
-        }
-
-        // Draw image
-        ctx.drawImage(img, 0, 0, width, height)
-        ctx.restore()
-
-        // Apply filters
-        applyFilters(ctx, width, height)
-
-        // Convert to data URL
-        const dataUrl = canvas.toDataURL('image/png', 1.0)
-        
-        // Convert to blob
-        const byteString = atob(dataUrl.split(',')[1])
-        const ab = new ArrayBuffer(byteString.length)
-        const ia = new Uint8Array(ab)
-        
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i)
-        }
-        
-        const editedFile = new File([ab], file.name.replace(/\.[^/.]+$/, '_edited.png'), {
-          type: 'image/png'
-        })
-
-        const operations = []
-        if (settings.width !== img.width || settings.height !== img.height) operations.push('Resize')
-        if (settings.brightness !== 100) operations.push('Brightness')
-        if (settings.contrast !== 100) operations.push('Contrast')
-        if (settings.saturation !== 100) operations.push('Saturation')
-        if (settings.hue !== 0) operations.push('Hue')
-        if (settings.blur > 0) operations.push('Blur')
-        if (settings.sharpen > 0) operations.push('Sharpen')
-        if (settings.colorMode !== 'color') operations.push('Color Mode')
-        if (settings.rotation !== 0) operations.push('Rotation')
-        if (settings.flipHorizontal || settings.flipVertical) operations.push('Flip')
-
-        resolve({
-          original: file,
-          edited: editedFile,
-          originalSize: file.size,
-          editedSize: editedFile.size,
-          dataUrl,
-          operations
-        })
       }
 
       img.onerror = () => {
@@ -371,11 +389,18 @@ export default function ImageEditor({ className }: ImageEditorProps) {
   }
 
   const downloadImage = (image: EditedImage) => {
+    // Create a blob from the edited file
+    const blob = new Blob([image.edited], { type: image.edited.type })
+    const url = URL.createObjectURL(blob)
+    
     const link = document.createElement('a')
-    link.href = image.dataUrl
+    link.href = url
     link.download = image.edited.name
     link.click()
-    toast.success('Image downloaded')
+    
+    // Clean up the URL object
+    URL.revokeObjectURL(url)
+    toast.success('Edited image downloaded')
   }
 
   const removeImage = (index: number) => {
