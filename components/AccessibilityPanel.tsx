@@ -330,6 +330,7 @@ export default function AccessibilityPanel() {
   const [isOpen, setIsOpen] = useState(false)
   const [settings, setSettings] = useState<AccessibilitySettings>(initialSettings)
   const [activeCategory, setActiveCategory] = useState<string>('visual')
+  const [showAllOptions, setShowAllOptions] = useState(false)
 
   const applyAccessibilitySettings = useCallback(() => {
     const root = document.documentElement
@@ -567,26 +568,42 @@ export default function AccessibilityPanel() {
   }) => (
     <motion.button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border-2 transition-all duration-200 min-h-[60px] sm:min-h-[80px] accessibility-button ${
+      className={`flex items-center justify-between w-full p-3 rounded-lg border-2 transition-all duration-200 accessibility-button ${
         isActive 
           ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-md' 
           : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
       }`}
       title={description || label}
       aria-label={description || label}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
     >
-      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 sm:mb-2 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
-      <span className="text-xs font-medium text-center leading-tight px-1">{label}</span>
+      <div className="flex items-center space-x-3">
+        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
+        <div className="text-left">
+          <span className="text-sm font-medium">{label}</span>
+          {description && (
+            <p className="text-xs text-gray-500 mt-1">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className={`w-4 h-4 rounded-full border-2 ${
+        isActive 
+          ? 'bg-blue-500 border-blue-500' 
+          : 'border-gray-300'
+      }`}>
+        {isActive && (
+          <div className="w-full h-full rounded-full bg-white scale-50"></div>
+        )}
+      </div>
     </motion.button>
   )
 
   const renderVisualSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Color & Contrast</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Color & Contrast</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Contrast}
             label="High Contrast"
@@ -596,7 +613,7 @@ export default function AccessibilityPanel() {
           />
           <AccessibilityButton
             icon={Square}
-            label="Extra High"
+            label="Extra High Contrast"
             isActive={settings.contrast === 'extra-high'}
             onClick={() => updateSetting('contrast', settings.contrast === 'extra-high' ? 'normal' : 'extra-high')}
             description="Maximum color contrast"
@@ -619,46 +636,46 @@ export default function AccessibilityPanel() {
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Text Size</h4>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Text Size</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Minus}
-            label="XS"
+            label="Extra Small (XS)"
             isActive={settings.fontSize === 'xs'}
             onClick={() => updateSetting('fontSize', 'xs')}
             description="Extra small text"
           />
           <AccessibilityButton
             icon={Type}
-            label="Small"
+            label="Small Text"
             isActive={settings.fontSize === 'small'}
             onClick={() => updateSetting('fontSize', 'small')}
             description="Small text"
           />
           <AccessibilityButton
             icon={Circle}
-            label="Medium"
+            label="Medium Text"
             isActive={settings.fontSize === 'medium'}
             onClick={() => updateSetting('fontSize', 'medium')}
             description="Normal text size"
           />
           <AccessibilityButton
             icon={Plus}
-            label="Large"
+            label="Large Text"
             isActive={settings.fontSize === 'large'}
             onClick={() => updateSetting('fontSize', 'large')}
             description="Large text"
           />
           <AccessibilityButton
             icon={Maximize}
-            label="XL"
+            label="Extra Large (XL)"
             isActive={settings.fontSize === 'xl'}
             onClick={() => updateSetting('fontSize', 'xl')}
             description="Extra large text"
           />
           <AccessibilityButton
             icon={ZoomIn}
-            label="XXL"
+            label="Maximum Size (XXL)"
             isActive={settings.fontSize === 'xxl'}
             onClick={() => updateSetting('fontSize', 'xxl')}
             description="Maximum text size"
@@ -667,8 +684,8 @@ export default function AccessibilityPanel() {
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Visual Options</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Visual Options</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={ImageOff}
             label="Hide Images"
@@ -706,14 +723,14 @@ export default function AccessibilityPanel() {
           />
           <AccessibilityButton
             icon={Palette}
-            label="Color Blind"
+            label="Color Blind Support"
             isActive={settings.colorBlindSupport}
             onClick={() => updateSetting('colorBlindSupport', !settings.colorBlindSupport)}
             description="Color blind support"
           />
           <AccessibilityButton
             icon={BookOpen}
-            label="Dyslexia"
+            label="Dyslexia Friendly"
             isActive={settings.dyslexiaFriendly}
             onClick={() => updateSetting('dyslexiaFriendly', !settings.dyslexiaFriendly)}
             description="Dyslexia friendly fonts"
@@ -726,8 +743,8 @@ export default function AccessibilityPanel() {
   const renderAudioSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Audio Features</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Audio Features</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Volume2}
             label="Text to Speech"
@@ -771,11 +788,11 @@ export default function AccessibilityPanel() {
   const renderNavigationSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Navigation Options</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Navigation Options</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Keyboard}
-            label="Keyboard Nav"
+            label="Keyboard Navigation"
             isActive={settings.keyboardNavigation}
             onClick={() => updateSetting('keyboardNavigation', !settings.keyboardNavigation)}
             description="Keyboard navigation"
@@ -816,8 +833,8 @@ export default function AccessibilityPanel() {
   const renderReadingSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Reading Options</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Reading Options</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Scroll}
             label="Reading Guide"
@@ -850,25 +867,25 @@ export default function AccessibilityPanel() {
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Text Spacing</h4>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Text Spacing</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Minus}
-            label="Tight"
+            label="Tight Line Spacing"
             isActive={settings.lineSpacing === 'tight'}
             onClick={() => updateSetting('lineSpacing', 'tight')}
             description="Tight line spacing"
           />
           <AccessibilityButton
             icon={Type}
-            label="Normal"
+            label="Normal Line Spacing"
             isActive={settings.lineSpacing === 'normal'}
             onClick={() => updateSetting('lineSpacing', 'normal')}
             description="Normal line spacing"
           />
           <AccessibilityButton
             icon={Plus}
-            label="Loose"
+            label="Loose Line Spacing"
             isActive={settings.lineSpacing === 'loose'}
             onClick={() => updateSetting('lineSpacing', 'loose')}
             description="Loose line spacing"
@@ -881,8 +898,8 @@ export default function AccessibilityPanel() {
   const renderInteractionSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Interaction Options</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Interaction Options</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Maximize}
             label="Large Buttons"
@@ -906,7 +923,7 @@ export default function AccessibilityPanel() {
           />
           <AccessibilityButton
             icon={MousePointer2}
-            label="No Hover"
+            label="No Hover Effects"
             isActive={!settings.hoverEffects}
             onClick={() => updateSetting('hoverEffects', settings.hoverEffects)}
             description="Disable hover effects"
@@ -919,8 +936,8 @@ export default function AccessibilityPanel() {
   const renderCognitiveSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Cognitive Support</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Cognitive Support</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Clock}
             label="Timeout Warning"
@@ -937,7 +954,7 @@ export default function AccessibilityPanel() {
           />
           <AccessibilityButton
             icon={Brain}
-            label="Reduce Load"
+            label="Reduce Cognitive Load"
             isActive={settings.cognitiveLoad}
             onClick={() => updateSetting('cognitiveLoad', !settings.cognitiveLoad)}
             description="Reduce cognitive load"
@@ -964,11 +981,11 @@ export default function AccessibilityPanel() {
   const renderMotorSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Motor Support</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Motor Support</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Hand}
-            label="One Handed"
+            label="One Handed Mode"
             isActive={settings.oneHandedMode}
             onClick={() => updateSetting('oneHandedMode', !settings.oneHandedMode)}
             description="One-handed operation"
@@ -1009,8 +1026,8 @@ export default function AccessibilityPanel() {
   const renderAdvancedSettings = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Advanced Options</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Advanced Options</h4>
+        <div className="space-y-2">
           <AccessibilityButton
             icon={Settings}
             label="Custom CSS"
@@ -1058,7 +1075,29 @@ export default function AccessibilityPanel() {
     </div>
   )
 
+  const renderAllOptions = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">All Accessibility Options</h3>
+        <p className="text-sm text-gray-600">Comprehensive accessibility settings for all needs</p>
+      </div>
+      
+      {renderVisualSettings()}
+      {renderAudioSettings()}
+      {renderNavigationSettings()}
+      {renderReadingSettings()}
+      {renderInteractionSettings()}
+      {renderCognitiveSettings()}
+      {renderMotorSettings()}
+      {renderAdvancedSettings()}
+    </div>
+  )
+
   const renderCategoryContent = () => {
+    if (showAllOptions) {
+      return renderAllOptions()
+    }
+    
     switch (activeCategory) {
       case 'visual': return renderVisualSettings()
       case 'audio': return renderAudioSettings()
@@ -1125,12 +1164,29 @@ export default function AccessibilityPanel() {
               {/* Category Tabs */}
               <div className="border-b border-gray-200">
                 <div className="flex overflow-x-auto scrollbar-hide">
+                  <button
+                    onClick={() => {
+                      setShowAllOptions(true)
+                      setActiveCategory('all')
+                    }}
+                    className={`flex items-center space-x-1 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                      showAllOptions
+                        ? 'border-blue-500 text-blue-600 bg-blue-50'
+                        : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                    }`}
+                  >
+                    <Grid3X3 className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
+                    <span className="hidden sm:inline">All Options</span>
+                  </button>
                   {categories.map((category) => (
                     <button
                       key={category.id}
-                      onClick={() => setActiveCategory(category.id)}
+                      onClick={() => {
+                        setActiveCategory(category.id)
+                        setShowAllOptions(false)
+                      }}
                       className={`flex items-center space-x-1 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                        activeCategory === category.id
+                        activeCategory === category.id && !showAllOptions
                           ? 'border-blue-500 text-blue-600 bg-blue-50'
                           : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
                       }`}
@@ -1143,8 +1199,35 @@ export default function AccessibilityPanel() {
               </div>
 
               {/* Content */}
-              <div className="p-3 sm:p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
+              <div className="p-3 sm:p-6 overflow-y-auto max-h-[calc(95vh-200px)]">
                 {renderCategoryContent()}
+              </div>
+
+              {/* Footer with Close/Done Buttons */}
+              <div className="border-t border-gray-200 p-3 sm:p-6 bg-gray-50">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Done
+                  </button>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="flex-1 sm:flex-none px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium flex items-center justify-center"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Close
+                  </button>
+                  <button
+                    onClick={resetSettings}
+                    className="flex-1 sm:flex-none px-6 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium flex items-center justify-center"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset All
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
