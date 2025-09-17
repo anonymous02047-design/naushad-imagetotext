@@ -18,6 +18,194 @@ export default function PDFProcessor({ onTextExtracted }: PDFProcessorProps) {
     status: 'success' | 'error'
   }>>([])
 
+  // Advanced Document Analysis System
+  const analyzeDocument = (text: string, filename: string) => {
+    const lowerText = text.toLowerCase()
+    
+    // Document type detection with confidence scoring
+    const documentTypes = [
+      {
+        type: 'driving_license',
+        patterns: ['driving licence', 'dlno', 'driving license', 'dl no', 'license no'],
+        confidence: 0
+      },
+      {
+        type: 'admit_card',
+        patterns: ['admit card', 'examination', 'hall ticket', 'exam card', 'hall ticket'],
+        confidence: 0
+      },
+      {
+        type: 'marksheet',
+        patterns: ['mark sheet', 'marksheet', 'grade card', 'result', 'academic record'],
+        confidence: 0
+      },
+      {
+        type: 'passport',
+        patterns: ['passport', 'passport no', 'passport number', 'passport no.'],
+        confidence: 0
+      },
+      {
+        type: 'aadhaar',
+        patterns: ['aadhaar', 'aadhar', 'uid', 'unique identification'],
+        confidence: 0
+      },
+      {
+        type: 'pan_card',
+        patterns: ['pan card', 'permanent account number', 'pan no', 'pan number'],
+        confidence: 0
+      },
+      {
+        type: 'voter_id',
+        patterns: ['voter id', 'electoral', 'epic', 'voter card', 'electoral roll'],
+        confidence: 0
+      },
+      {
+        type: 'birth_certificate',
+        patterns: ['birth certificate', 'birth cert', 'birth cert.', 'date of birth'],
+        confidence: 0
+      },
+      {
+        type: 'death_certificate',
+        patterns: ['death certificate', 'death cert', 'death cert.', 'date of death'],
+        confidence: 0
+      },
+      {
+        type: 'marriage_certificate',
+        patterns: ['marriage certificate', 'marriage cert', 'marriage cert.', 'wedding certificate'],
+        confidence: 0
+      },
+      {
+        type: 'degree_certificate',
+        patterns: ['degree certificate', 'graduation', 'bachelor', 'master', 'phd', 'diploma', 'university'],
+        confidence: 0
+      },
+      {
+        type: 'invoice',
+        patterns: ['invoice', 'bill', 'receipt', 'payment', 'amount', 'total', 'subtotal'],
+        confidence: 0
+      },
+      {
+        type: 'bank_statement',
+        patterns: ['bank statement', 'account statement', 'banking', 'transaction', 'balance'],
+        confidence: 0
+      },
+      {
+        type: 'salary_slip',
+        patterns: ['salary slip', 'payslip', 'pay slip', 'salary', 'wages', 'employee'],
+        confidence: 0
+      },
+      {
+        type: 'insurance',
+        patterns: ['insurance', 'policy', 'premium', 'coverage', 'claim'],
+        confidence: 0
+      },
+      {
+        type: 'medical_document',
+        patterns: ['medical report', 'prescription', 'diagnosis', 'doctor', 'patient', 'hospital'],
+        confidence: 0
+      },
+      {
+        type: 'property_document',
+        patterns: ['property', 'deed', 'registry', 'land', 'house', 'real estate'],
+        confidence: 0
+      },
+      {
+        type: 'contract',
+        patterns: ['contract', 'agreement', 'terms', 'conditions', 'party'],
+        confidence: 0
+      },
+      {
+        type: 'legal_document',
+        patterns: ['court', 'legal', 'judgment', 'case', 'law', 'attorney'],
+        confidence: 0
+      }
+    ]
+
+    // Calculate confidence scores
+    documentTypes.forEach(docType => {
+      docType.patterns.forEach(pattern => {
+        if (lowerText.includes(pattern)) {
+          docType.confidence += 1
+        }
+      })
+    })
+
+    // Sort by confidence and get the most likely document type
+    const sortedTypes = documentTypes.sort((a, b) => b.confidence - a.confidence)
+    const detectedType = sortedTypes[0].confidence > 0 ? sortedTypes[0].type : 'unknown'
+
+    return { detectedType, confidence: sortedTypes[0].confidence, allTypes: sortedTypes }
+  }
+
+  // Universal Field Extractor
+  const extractUniversalFields = (text: string) => {
+    const fields = {
+      // Personal Information
+      name: extractField(text, ['name', 'full name', 'applicant name', 'holder name', 'student name', 'patient name']),
+      fatherName: extractField(text, ['father', 'father name', 'father\'s name', 'fathers name']),
+      motherName: extractField(text, ['mother', 'mother name', 'mother\'s name', 'mothers name']),
+      dateOfBirth: extractField(text, ['date of birth', 'dob', 'birth date', 'born on']),
+      gender: extractField(text, ['gender', 'sex', 'male', 'female']),
+      age: extractField(text, ['age', 'years old']),
+      
+      // Contact Information
+      address: extractField(text, ['address', 'residence', 'permanent address', 'current address']),
+      phone: extractField(text, ['phone', 'mobile', 'contact', 'telephone', 'cell']),
+      email: extractField(text, ['email', 'e-mail', 'mail']),
+      
+      // Identification Numbers
+      idNumber: extractField(text, ['id', 'number', 'no', 'id no', 'number']),
+      rollNumber: extractField(text, ['roll', 'roll no', 'roll number', 'student id']),
+      registrationNumber: extractField(text, ['registration', 'reg no', 'reg number', 'registration no']),
+      
+      // Dates
+      issueDate: extractField(text, ['issue date', 'issued on', 'date of issue', 'issued']),
+      expiryDate: extractField(text, ['expiry', 'expires', 'valid until', 'expiry date']),
+      date: extractField(text, ['date', 'dated', 'on']),
+      
+      // Financial Information
+      amount: extractField(text, ['amount', 'total', 'sum', 'value', 'price', 'cost']),
+      balance: extractField(text, ['balance', 'remaining', 'outstanding']),
+      salary: extractField(text, ['salary', 'wages', 'income', 'pay']),
+      
+      // Academic Information
+      degree: extractField(text, ['degree', 'course', 'program', 'qualification']),
+      university: extractField(text, ['university', 'college', 'institute', 'school']),
+      year: extractField(text, ['year', 'session', 'academic year']),
+      result: extractField(text, ['result', 'grade', 'marks', 'score', 'cgpa']),
+      
+      // Medical Information
+      diagnosis: extractField(text, ['diagnosis', 'condition', 'disease', 'illness']),
+      doctor: extractField(text, ['doctor', 'physician', 'dr.', 'medical officer']),
+      
+      // Legal Information
+      caseNumber: extractField(text, ['case', 'case no', 'case number', 'file no']),
+      court: extractField(text, ['court', 'tribunal', 'judge']),
+      
+      // Other
+      place: extractField(text, ['place', 'location', 'venue', 'city', 'state']),
+      purpose: extractField(text, ['purpose', 'reason', 'objective', 'aim']),
+      status: extractField(text, ['status', 'state', 'condition', 'position'])
+    }
+
+    return fields
+  }
+
+  // Helper function to extract field values using multiple patterns
+  const extractField = (text: string, patterns: string[]) => {
+    for (const pattern of patterns) {
+      const regex = new RegExp(`${pattern}[\\s:]*([^\\n\\r,]+)`, 'gi')
+      const match = text.match(regex)
+      if (match) {
+        const value = match[0].replace(new RegExp(pattern, 'gi'), '').replace(/[:\s]+/, '').trim()
+        if (value && value.length > 1) {
+          return value
+        }
+      }
+    }
+    return null
+  }
+
   const formatTextOutput = (text: string, filename: string) => {
     // Clean and structure the text
     let cleanedText = text
@@ -25,56 +213,180 @@ export default function PDFProcessor({ onTextExtracted }: PDFProcessorProps) {
       .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
       .trim()
 
-    const lowerText = cleanedText.toLowerCase()
+    // Analyze document type
+    const analysis = analyzeDocument(cleanedText, filename)
+    const detectedType = analysis.detectedType
+    const confidence = analysis.confidence
 
-    // Document type detection with comprehensive patterns
-    if (lowerText.includes('driving licence') || lowerText.includes('dlno') || lowerText.includes('driving license')) {
-      return formatDrivingLicense(cleanedText, filename)
-    } else if (lowerText.includes('admit card') || lowerText.includes('examination') || lowerText.includes('hall ticket')) {
-      return formatAdmitCard(cleanedText, filename)
-    } else if (lowerText.includes('mark sheet') || lowerText.includes('marksheet') || lowerText.includes('grade card')) {
-      return formatMarksheet(cleanedText, filename)
-    } else if (lowerText.includes('passport') || lowerText.includes('passport no') || lowerText.includes('passport number')) {
-      return formatPassport(cleanedText, filename)
-    } else if (lowerText.includes('aadhaar') || lowerText.includes('aadhar') || lowerText.includes('uid')) {
-      return formatAadhaar(cleanedText, filename)
-    } else if (lowerText.includes('pan card') || lowerText.includes('permanent account number')) {
-      return formatPAN(cleanedText, filename)
-    } else if (lowerText.includes('voter id') || lowerText.includes('electoral') || lowerText.includes('epic')) {
-      return formatVoterID(cleanedText, filename)
-    } else if (lowerText.includes('birth certificate') || lowerText.includes('birth cert')) {
-      return formatBirthCertificate(cleanedText, filename)
-    } else if (lowerText.includes('death certificate') || lowerText.includes('death cert')) {
-      return formatDeathCertificate(cleanedText, filename)
-    } else if (lowerText.includes('marriage certificate') || lowerText.includes('marriage cert')) {
-      return formatMarriageCertificate(cleanedText, filename)
-    } else if (lowerText.includes('degree certificate') || lowerText.includes('graduation') || lowerText.includes('bachelor') || lowerText.includes('master')) {
-      return formatDegreeCertificate(cleanedText, filename)
-    } else if (lowerText.includes('invoice') || lowerText.includes('bill') || lowerText.includes('receipt')) {
-      return formatInvoice(cleanedText, filename)
-    } else if (lowerText.includes('bank statement') || lowerText.includes('account statement')) {
-      return formatBankStatement(cleanedText, filename)
-    } else if (lowerText.includes('salary slip') || lowerText.includes('payslip') || lowerText.includes('pay slip')) {
-      return formatSalarySlip(cleanedText, filename)
-    } else if (lowerText.includes('insurance') || lowerText.includes('policy')) {
-      return formatInsurance(cleanedText, filename)
-    } else if (lowerText.includes('medical report') || lowerText.includes('prescription') || lowerText.includes('diagnosis')) {
-      return formatMedicalDocument(cleanedText, filename)
-    } else if (lowerText.includes('property') || lowerText.includes('deed') || lowerText.includes('registry')) {
-      return formatPropertyDocument(cleanedText, filename)
-    } else if (lowerText.includes('contract') || lowerText.includes('agreement')) {
-      return formatContract(cleanedText, filename)
-    } else if (lowerText.includes('court') || lowerText.includes('legal') || lowerText.includes('judgment')) {
-      return formatLegalDocument(cleanedText, filename)
+    // Extract universal fields
+    const extractedFields = extractUniversalFields(cleanedText)
+
+    // Generate structured output based on detected type
+    if (detectedType !== 'unknown' && confidence > 0) {
+      return generateStructuredOutput(cleanedText, filename, detectedType, extractedFields, confidence)
+    } else {
+      // Fallback to universal structured output
+      return generateUniversalStructuredOutput(cleanedText, filename, extractedFields)
+    }
+  }
+
+  // Generate structured output for detected document types
+  const generateStructuredOutput = (text: string, filename: string, docType: string, fields: any, confidence: number) => {
+    const typeEmojis: { [key: string]: string } = {
+      driving_license: '🚗',
+      admit_card: '🎓',
+      marksheet: '📊',
+      passport: '🛂',
+      aadhaar: '🆔',
+      pan_card: '💳',
+      voter_id: '🗳️',
+      birth_certificate: '👶',
+      death_certificate: '⚰️',
+      marriage_certificate: '💒',
+      degree_certificate: '🎓',
+      invoice: '🧾',
+      bank_statement: '🏦',
+      salary_slip: '💰',
+      insurance: '🛡️',
+      medical_document: '🏥',
+      property_document: '🏠',
+      contract: '📋',
+      legal_document: '⚖️'
     }
 
-    // Default formatting
-    return `📄 ${filename}
+    const typeNames: { [key: string]: string } = {
+      driving_license: 'DRIVING LICENSE',
+      admit_card: 'ADMIT CARD',
+      marksheet: 'MARK SHEET',
+      passport: 'PASSPORT',
+      aadhaar: 'AADHAAR CARD',
+      pan_card: 'PAN CARD',
+      voter_id: 'VOTER ID',
+      birth_certificate: 'BIRTH CERTIFICATE',
+      death_certificate: 'DEATH CERTIFICATE',
+      marriage_certificate: 'MARRIAGE CERTIFICATE',
+      degree_certificate: 'DEGREE CERTIFICATE',
+      invoice: 'INVOICE/RECEIPT',
+      bank_statement: 'BANK STATEMENT',
+      salary_slip: 'SALARY SLIP',
+      insurance: 'INSURANCE POLICY',
+      medical_document: 'MEDICAL DOCUMENT',
+      property_document: 'PROPERTY DOCUMENT',
+      contract: 'CONTRACT/AGREEMENT',
+      legal_document: 'LEGAL DOCUMENT'
+    }
+
+    const emoji = typeEmojis[docType] || '📄'
+    const typeName = typeNames[docType] || 'DOCUMENT'
+
+    let formatted = `${emoji} ${typeName} - ${filename}
 ${'='.repeat(60)}
-${cleanedText}
+🎯 Auto-Detected Type: ${typeName} (Confidence: ${confidence}/5)
 ${'='.repeat(60)}
 
 `
+
+    // Add extracted fields
+    const fieldLabels: { [key: string]: string } = {
+      name: '👤 Name',
+      fatherName: '👨 Father\'s Name',
+      motherName: '👩 Mother\'s Name',
+      dateOfBirth: '📅 Date of Birth',
+      gender: '⚧ Gender',
+      age: '🎂 Age',
+      address: '🏠 Address',
+      phone: '📞 Phone',
+      email: '📧 Email',
+      idNumber: '🆔 ID Number',
+      rollNumber: '🎫 Roll Number',
+      registrationNumber: '📋 Registration Number',
+      issueDate: '📅 Issue Date',
+      expiryDate: '📅 Expiry Date',
+      date: '📅 Date',
+      amount: '💰 Amount',
+      balance: '💰 Balance',
+      salary: '💰 Salary',
+      degree: '🎓 Degree',
+      university: '🏫 University',
+      year: '📅 Year',
+      result: '🏆 Result',
+      diagnosis: '🔬 Diagnosis',
+      doctor: '👨‍⚕️ Doctor',
+      caseNumber: '⚖️ Case Number',
+      court: '🏛️ Court',
+      place: '📍 Place',
+      purpose: '🎯 Purpose',
+      status: '📊 Status'
+    }
+
+    // Add non-null fields
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value && fieldLabels[key]) {
+        formatted += `${fieldLabels[key]}: ${value}\n`
+      }
+    })
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
+  }
+
+  // Generate universal structured output for unknown document types
+  const generateUniversalStructuredOutput = (text: string, filename: string, fields: any) => {
+    let formatted = `📄 UNIVERSAL DOCUMENT - ${filename}
+${'='.repeat(60)}
+🤖 Auto-Analyzed Document (Unknown Type)
+${'='.repeat(60)}
+
+`
+
+    // Add extracted fields
+    const fieldLabels: { [key: string]: string } = {
+      name: '👤 Name',
+      fatherName: '👨 Father\'s Name',
+      motherName: '👩 Mother\'s Name',
+      dateOfBirth: '📅 Date of Birth',
+      gender: '⚧ Gender',
+      age: '🎂 Age',
+      address: '🏠 Address',
+      phone: '📞 Phone',
+      email: '📧 Email',
+      idNumber: '🆔 ID Number',
+      rollNumber: '🎫 Roll Number',
+      registrationNumber: '📋 Registration Number',
+      issueDate: '📅 Issue Date',
+      expiryDate: '📅 Expiry Date',
+      date: '📅 Date',
+      amount: '💰 Amount',
+      balance: '💰 Balance',
+      salary: '💰 Salary',
+      degree: '🎓 Degree',
+      university: '🏫 University',
+      year: '📅 Year',
+      result: '🏆 Result',
+      diagnosis: '🔬 Diagnosis',
+      doctor: '👨‍⚕️ Doctor',
+      caseNumber: '⚖️ Case Number',
+      court: '🏛️ Court',
+      place: '📍 Place',
+      purpose: '🎯 Purpose',
+      status: '📊 Status'
+    }
+
+    // Add non-null fields
+    let hasFields = false
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value && fieldLabels[key]) {
+        formatted += `${fieldLabels[key]}: ${value}\n`
+        hasFields = true
+      }
+    })
+
+    if (!hasFields) {
+      formatted += `🔍 No structured fields detected. Document may contain unstructured text.\n`
+    }
+
+    formatted += `\n📝 Full Text:\n${text}\n${'='.repeat(60)}\n\n`
+    return formatted
   }
 
   const formatDrivingLicense = (text: string, filename: string) => {
