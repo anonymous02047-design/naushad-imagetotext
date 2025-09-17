@@ -2,77 +2,111 @@
 
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, X, CheckCircle, AlertCircle, Download, Trash2 } from 'lucide-react'
+import { Upload, X, CheckCircle, AlertCircle, Download, Trash2, FileText, Image } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { createWorker } from 'tesseract.js'
 import toast from 'react-hot-toast'
 
-interface ProcessedImage {
+interface ProcessedFile {
   id: string
   file: File
   text: string
   status: 'pending' | 'processing' | 'completed' | 'error'
   progress: number
   error?: string
+  type: 'image' | 'pdf'
 }
 
 export default function BatchProcessor() {
-  const [images, setImages] = useState<ProcessedImage[]>([])
+  const [files, setFiles] = useState<ProcessedFile[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('eng')
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newImages: ProcessedImage[] = acceptedFiles.map(file => ({
+    const newFiles: ProcessedFile[] = acceptedFiles.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
       text: '',
       status: 'pending',
-      progress: 0
+      progress: 0,
+      type: file.type.startsWith('image/') ? 'image' : 'pdf'
     }))
     
-    setImages(prev => [...prev, ...newImages])
-    toast.success(`${acceptedFiles.length} images added to batch`)
+    setFiles(prev => [...prev, ...newFiles])
+    toast.success(`${acceptedFiles.length} files added to batch`)
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.tiff']
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.tiff'],
+      'application/pdf': ['.pdf']
     },
     multiple: true,
     disabled: isProcessing
   })
 
   const processBatch = async () => {
-    if (images.length === 0) return
+    if (files.length === 0) return
 
     setIsProcessing(true)
-    const pendingImages = images.filter(img => img.status === 'pending')
+    const pendingFiles = files.filter(file => file.status === 'pending')
     
     try {
       const worker = await createWorker(selectedLanguage)
       
-      for (let i = 0; i < pendingImages.length; i++) {
-        const image = pendingImages[i]
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i]
         
         // Update status to processing
-        setImages(prev => prev.map(img => 
-          img.id === image.id ? { ...img, status: 'processing' as const } : img
+        setFiles(prev => prev.map(f => 
+          f.id === file.id ? { ...f, status: 'processing' as const } : f
         ))
 
         try {
-          const { data: { text } } = await worker.recognize(image.file)
+          let extractedText = ''
           
-          setImages(prev => prev.map(img => 
-            img.id === image.id 
-              ? { ...img, text, status: 'completed' as const, progress: 100 }
-              : img
+          if (file.type === 'image') {
+            // Process image with Tesseract
+            const { data: { text } } = await worker.recognize(file.file)
+            extractedText = text
+          } else if (file.type === 'pdf') {
+            // Process PDF with PDF.js
+            const pdfjsLib = await import('pdfjs-dist')
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
+            
+            const arrayBuffer = await file.file.arrayBuffer()
+            const pdf = await pdfjsLib.getDocument({ 
+              data: arrayBuffer,
+              useWorkerFetch: false,
+              isEvalSupported: false,
+              useSystemFonts: true
+            }).promise
+            
+            const allText: string[] = []
+            
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+              const page = await pdf.getPage(pageNum)
+              const textContent = await page.getTextContent()
+              const pageText = textContent.items
+                .map((item: any) => item.str)
+                .join(' ')
+              allText.push(pageText)
+            }
+            
+            extractedText = allText.join('\n\n')
+          }
+          
+          setFiles(prev => prev.map(f => 
+            f.id === file.id 
+              ? { ...f, text: extractedText, status: 'completed' as const, progress: 100 }
+              : f
           ))
         } catch (error) {
-          setImages(prev => prev.map(img => 
-            img.id === image.id 
-              ? { ...img, status: 'error' as const, error: 'Processing failed' }
-              : img
+          setFiles(prev => prev.map(f => 
+            f.id === file.id 
+              ? { ...f, status: 'error' as const, error: 'Processing failed' }
+              : f
           ))
         }
       }
@@ -86,23 +120,23 @@ export default function BatchProcessor() {
     }
   }
 
-  const removeImage = (id: string) => {
-    setImages(prev => prev.filter(img => img.id !== id))
+  const removeFile = (id: string) => {
+    setFiles(prev => prev.filter(file => file.id !== id))
   }
 
   const clearAll = () => {
-    setImages([])
+    setFiles([])
   }
 
   const downloadAll = () => {
-    const completedImages = images.filter(img => img.status === 'completed')
-    if (completedImages.length === 0) {
-      toast.error('No completed images to download')
+    const completedFiles = files.filter(file => file.status === 'completed')
+    if (completedFiles.length === 0) {
+      toast.error('No completed files to download')
       return
     }
 
-    const allText = completedImages.map(img => 
-      `=== ${img.file.name} ===\n${img.text}\n\n`
+    const allText = completedFiles.map(file => 
+      `=== ${file.file.name} (${file.type.toUpperCase()}) ===\n${file.text}\n\n`
     ).join('')
 
     const blob = new Blob([allText], { type: 'text/plain' })
@@ -116,8 +150,8 @@ export default function BatchProcessor() {
     toast.success('All text downloaded!')
   }
 
-  const completedCount = images.filter(img => img.status === 'completed').length
-  const errorCount = images.filter(img => img.status === 'error').length
+  const completedCount = files.filter(file => file.status === 'completed').length
+  const errorCount = files.filter(file => file.status === 'error').length
 
   return (
     <motion.div
@@ -130,7 +164,7 @@ export default function BatchProcessor() {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Batch Processing</h2>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {completedCount}/{images.length} completed
+            {completedCount}/{files.length} completed
           </span>
           {errorCount > 0 && (
             <span className="text-sm text-red-500">
@@ -155,10 +189,10 @@ export default function BatchProcessor() {
         <input {...getInputProps()} />
         <Upload className="w-8 h-8 text-primary-500 mx-auto mb-2" />
         <p className="text-gray-700 dark:text-gray-300 font-medium">
-          Drop multiple images here or click to select
+          Drop multiple files here or click to select
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Process up to 10 images at once
+          Support for images (JPG, PNG, GIF, etc.) and PDF files
         </p>
       </div>
 
@@ -185,13 +219,13 @@ export default function BatchProcessor() {
       <div className="flex space-x-2 mb-4">
         <button
           onClick={processBatch}
-          disabled={isProcessing || images.length === 0}
+          disabled={isProcessing || files.length === 0}
           className="btn-primary flex-1"
         >
-          {isProcessing ? 'Processing...' : `Process ${images.length} Images`}
+          {isProcessing ? 'Processing...' : `Process ${files.length} Files`}
         </button>
         
-        {images.length > 0 && (
+        {files.length > 0 && (
           <>
             <button
               onClick={downloadAll}
@@ -212,12 +246,12 @@ export default function BatchProcessor() {
         )}
       </div>
 
-      {/* Image List */}
+      {/* File List */}
       <div className="space-y-2 max-h-96 overflow-y-auto">
         <AnimatePresence>
-          {images.map((image) => (
+          {files.map((file) => (
             <motion.div
-              key={image.id}
+              key={file.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -225,40 +259,51 @@ export default function BatchProcessor() {
             >
               <div className="flex items-center space-x-3 flex-1">
                 <div className="w-8 h-8 rounded bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                  {image.status === 'completed' && <CheckCircle className="w-4 h-4 text-green-500" />}
-                  {image.status === 'error' && <AlertCircle className="w-4 h-4 text-red-500" />}
-                  {image.status === 'processing' && (
+                  {file.status === 'completed' && <CheckCircle className="w-4 h-4 text-green-500" />}
+                  {file.status === 'error' && <AlertCircle className="w-4 h-4 text-red-500" />}
+                  {file.status === 'processing' && (
                     <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                   )}
-                  {image.status === 'pending' && <div className="w-4 h-4 bg-gray-400 rounded-full" />}
+                  {file.status === 'pending' && (
+                    file.type === 'image' ? <Image className="w-4 h-4 text-gray-400" /> : <FileText className="w-4 h-4 text-gray-400" />
+                  )}
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {image.file.name}
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {file.file.name}
+                    </p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      file.type === 'image' 
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                    }`}>
+                      {file.type.toUpperCase()}
+                    </span>
+                  </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {(image.file.size / 1024 / 1024).toFixed(2)} MB
+                    {(file.file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
               </div>
 
-              {image.status === 'processing' && (
+              {file.status === 'processing' && (
                 <div className="flex items-center space-x-2">
                   <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                     <div
                       className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${image.progress}%` }}
+                      style={{ width: `${file.progress}%` }}
                     />
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {image.progress}%
+                    {file.progress}%
                   </span>
                 </div>
               )}
 
               <button
-                onClick={() => removeImage(image.id)}
+                onClick={() => removeFile(file.id)}
                 className="p-1 text-gray-400 hover:text-red-500 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -268,10 +313,10 @@ export default function BatchProcessor() {
         </AnimatePresence>
       </div>
 
-      {images.length === 0 && (
+      {files.length === 0 && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           <Upload className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p>No images added yet</p>
+          <p>No files added yet</p>
         </div>
       )}
     </motion.div>
