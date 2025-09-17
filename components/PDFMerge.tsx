@@ -68,7 +68,10 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
     );
     
     if (files.length > 0) {
+      console.log(`Dropped ${files.length} PDF files`);
       addPDFFiles(files);
+    } else {
+      setError('Please drop only PDF files.');
     }
   };
 
@@ -78,7 +81,14 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
     );
     
     if (files.length > 0) {
+      console.log(`Selected ${files.length} PDF files`);
       addPDFFiles(files);
+    } else {
+      setError('Please select only PDF files.');
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -125,9 +135,9 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
           }));
         } catch (err) {
           console.error(`Error processing ${pdfFile.name}:`, err);
-          setPdfFiles(prev => prev.map(f => 
-            f.id === pdfFile.id ? { ...f, pages: 0 } : f
-          ));
+          setError(`Failed to process ${pdfFile.name}. Please try a different file.`);
+          // Remove the problematic file from the list
+          setPdfFiles(prev => prev.filter(f => f.id !== pdfFile.id));
         }
       }
       
@@ -307,6 +317,11 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
           const pdfDoc = await loadingTask.promise;
           
           const pagesToProcess = selectedPages[pdfFile.id] || Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
+          
+          if (pagesToProcess.length === 0) {
+            console.warn(`No pages selected for ${pdfFile.name}, skipping...`);
+            continue;
+          }
 
           for (const pageNum of pagesToProcess) {
             if (pageNum > pdfDoc.numPages) continue;
@@ -426,14 +441,18 @@ const PDFMerge: React.FC<PDFMergeProps> = ({ onClose }) => {
       const isSelected = current.includes(pageNum);
       
       if (isSelected) {
+        const newSelection = current.filter(p => p !== pageNum);
+        console.log(`Deselected page ${pageNum} for file ${fileId}. New selection:`, newSelection);
         return {
           ...prev,
-          [fileId]: current.filter(p => p !== pageNum)
+          [fileId]: newSelection
         };
       } else {
+        const newSelection = [...current, pageNum].sort((a, b) => a - b);
+        console.log(`Selected page ${pageNum} for file ${fileId}. New selection:`, newSelection);
         return {
           ...prev,
-          [fileId]: [...current, pageNum].sort((a, b) => a - b)
+          [fileId]: newSelection
         };
       }
     });
