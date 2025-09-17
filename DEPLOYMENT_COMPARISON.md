@@ -259,6 +259,6 @@ This multi-platform approach gives you:
 - ✅ **Flexibility** (choose the best platform for each use case)
 
 Your app will be available at:
-- **Vercel:** `https://your-app.vercel.app`
+- **Vercel:** `https://naushad-imagetotext-tools.vercel.app`
 - **Netlify:** `https://your-app.netlify.app`
 - **GitHub Pages:** `https://yourusername.github.io/naushad-imagetotext`

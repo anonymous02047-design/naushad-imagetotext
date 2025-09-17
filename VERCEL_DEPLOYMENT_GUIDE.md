@@ -23,7 +23,7 @@ This guide will help you deploy your Naushad ImageToText application to Vercel a
 
 4. **Your app will be deployed and you'll get a URL like:**
    ```
-   https://your-app-name.vercel.app
+   https://naushad-imagetotext-tools.vercel.app
    ```
 
 ### Method 2: Deploy via GitHub Integration
@@ -250,7 +250,7 @@ npm run preview
 5. **Monitor performance** and optimize as needed
 
 Your app will now be available on both platforms:
-- **Vercel:** `https://your-app-name.vercel.app`
+- **Vercel:** `https://naushad-imagetotext-tools.vercel.app`
 - **Netlify:** `https://your-app-name.netlify.app`
 
 Both deployments will be automatically updated when you push to your GitHub repository! 🎉
